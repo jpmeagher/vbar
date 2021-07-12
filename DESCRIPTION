@@ -1,0 +1,16 @@
+Package: vbar
+Type: Package
+Title: Variational Bayes Ancestral Reconstruction
+Version: 0.1.0.9000
+Author: Joe Meagher
+Maintainer: Joe Meagher <josephmaegher07@gmail.com>
+Description: Approximate Bayesian Inference for Phylogenetic 
+    Latent Variable Models provides ancestral trait reconstruction 
+    for any collection of continuous and discrete traits, given the 
+    phylogeny of evolutionary relationships between taxa. Continuous
+    traits can be scalar- or function-valued, while discrete traits may
+    be ordinal or nominal. Models allow for repeated measurments of extant 
+    taxa.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
