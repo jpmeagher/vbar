@@ -18,3 +18,4 @@ Config/testthat/edition: 3
 Imports: 
     checkmate,
     testthat
+RoxygenNote: 7.1.1
