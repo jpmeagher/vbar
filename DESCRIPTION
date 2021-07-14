@@ -14,3 +14,7 @@ Description: Approximate Bayesian Inference for Phylogenetic
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
+Config/testthat/edition: 3
+Imports: 
+    checkmate,
+    testthat
