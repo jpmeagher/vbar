@@ -16,6 +16,8 @@ Encoding: UTF-8
 LazyData: true
 Config/testthat/edition: 3
 Imports: 
+    ape,
     checkmate,
+    phytools,
     testthat
 RoxygenNote: 7.1.1

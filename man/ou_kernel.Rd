@@ -7,20 +7,25 @@
 ou_kernel(d, amplitude, length_scale, perform_checks = TRUE)
 }
 \arguments{
-\item{d}{A set of non-negative real numbers. Pairwise distances between points.}
+\item{d}{A set of non-negative real numbers. Pairwise distances between
+points.}
 
-\item{amplitude}{A positive real number. The amplitude of the Ornstein-Uhlenbeck process.}
+\item{amplitude}{A positive real number. The amplitude of the
+Ornstein-Uhlenbeck process.}
 
-\item{length_scale}{A positive real number. The length-scale of the Ornstein-Uhlenbeck process.}
+\item{length_scale}{A positive real number. The length-scale of the
+Ornstein-Uhlenbeck process.}
 
-\item{perform_checks}{Logical. Check if function inputs are specified correctly.}
+\item{perform_checks}{Logical. Check if function inputs are specified
+correctly.}
 }
 \value{
-An array of positive values between 0 and \eqn{amplitude} with the same dimension as d.
+An array of positive values between 0 and \eqn{amplitude} with the
+  same dimension as d.
 }
 \description{
-Computes \deqn{amplitude * \exp ( - d / length_scale )} where
-\eqn{d \ge 0} is the distance between any two points in space for \eqn{amplitude > 0} and
+Computes \deqn{amplitude^2 * \exp ( - d / length_scale )} where \eqn{d \ge 0}
+is the distance between any two points in space for \eqn{amplitude > 0} and
 \eqn{length_scale > 0}.
 }
 \examples{
