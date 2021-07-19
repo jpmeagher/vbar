@@ -6,8 +6,9 @@
 \usage{
 simulate_phylogenetic_ou(
   phy,
-  amplitude = 1,
+  heritable_amplitude = 1,
   length_scale = 2,
+  environmental_amplitude = 0,
   internal = FALSE,
   perform_checks = TRUE
 )
@@ -15,8 +16,7 @@ simulate_phylogenetic_ou(
 \arguments{
 \item{phy}{An object of class "\eqn{phylo}".}
 
-\item{amplitude}{A positive real number. The amplitude of the
-Ornstein-Uhlenbeck process.}
+\item{heritable_amplitude}{A positive real-valued}
 
 \item{length_scale}{A positive real number. The length-scale of the
 Ornstein-Uhlenbeck process.}
@@ -28,15 +28,30 @@ internal nodes}
 correctly.}
 }
 \value{
-A numeric vector with names taken from the tip labels of \eqn{phy}. If
-  \eqn{ancestor = TRUE}, the node labels are used if present, otherwise, “Node1”,
-  “Node2”, etc.
+A numeric vector with names taken from the tip labels of \eqn{phy}.
+  If \eqn{ancestor = TRUE}, the node labels are used if present, otherwise,
+  “Node1”, “Node2”, etc.
 }
 \description{
 A wrapper for \eqn{ape::rTraitCont} which simulates an Ornstein-Uhlenbeck
-process parameterised by \eqn{amplitude > 0} and \eqn{length_scale > 0}.
+process over the phylogeny \eqn{phy} such that the phylogenetic Gaussian
+process
+\deqn{
+f ( \boldsymbol t )) \sim \mathcal{GP} ( 0, k (t, t' ))))}
+for
+\deqn{
+ k (t, t' )) = heritable_amplitude^2 \exp ( - \frac{d (t, t'
+))}{length_scale})) + \delta ( t_1, \dots, t_S ))
+}
+iparameterised by \eqn{heritable_amplitude > 0},
+\eqn{length_scale > 0}, and \eqn{environmental_amplitude > 0}, where \eqn{t}
+is a position on the phylogeny, \eqn{d (t, t')} is the length of the shortest
+ path from \eqn{t} to \eqn{t'}, \eqn{t_1, \dots, t_S} are positions
+corresponding to the \eqn{S} extant taxa, and \eqn{\delta ( \cdot
+))} is the indicator function.
 }
 \examples{
-tr <- ape::rtree(100)
+S <- 100
+tr <- ape::rtree(S)
 z <- simulate_phylogenetic_ou(tr)
 }

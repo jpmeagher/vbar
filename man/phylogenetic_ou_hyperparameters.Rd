@@ -14,9 +14,6 @@ phylogenetic_ou_hyperparameters(
 \arguments{
 \item{phy}{An object of class "\eqn{phylo}".}
 
-\item{amplitude}{A positive real number. The amplitude of the
-Ornstein-Uhlenbeck process.}
-
 \item{length_scale}{A positive real number. The length-scale of the
 Ornstein-Uhlenbeck process.}
 
