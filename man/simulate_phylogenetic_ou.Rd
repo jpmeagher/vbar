@@ -16,10 +16,14 @@ simulate_phylogenetic_ou(
 \arguments{
 \item{phy}{An object of class "\eqn{phylo}".}
 
-\item{heritable_amplitude}{A positive real-valued}
+\item{heritable_amplitude}{A positive real-valued scalar. The amplitude of
+the phylogenetic OU process.}
 
 \item{length_scale}{A positive real number. The length-scale of the
 Ornstein-Uhlenbeck process.}
+
+\item{environmental_amplitude}{A positive real-valued scalar. The amplitude
+of non-phylogenetic variation in the traits of extant taxa.}
 
 \item{internal}{A logical value. Specifies whether to return the values at
 internal nodes}
@@ -35,20 +39,14 @@ A numeric vector with names taken from the tip labels of \eqn{phy}.
 \description{
 A wrapper for \eqn{ape::rTraitCont} which simulates an Ornstein-Uhlenbeck
 process over the phylogeny \eqn{phy} such that the phylogenetic Gaussian
-process
-\deqn{
-f ( \boldsymbol t )) \sim \mathcal{GP} ( 0, k (t, t' ))))}
-for
-\deqn{
- k (t, t' )) = heritable_amplitude^2 \exp ( - \frac{d (t, t'
-))}{length_scale})) + \delta ( t_1, \dots, t_S ))
-}
-iparameterised by \eqn{heritable_amplitude > 0},
-\eqn{length_scale > 0}, and \eqn{environmental_amplitude > 0}, where \eqn{t}
-is a position on the phylogeny, \eqn{d (t, t')} is the length of the shortest
- path from \eqn{t} to \eqn{t'}, \eqn{t_1, \dots, t_S} are positions
-corresponding to the \eqn{S} extant taxa, and \eqn{\delta ( \cdot
-))} is the indicator function.
+process \deqn{ f ( \boldsymbol t )) \sim \mathcal{GP} ( 0, k (t, t' ))))} for
+\deqn{ k (t, t' )) = heritable_amplitude^2 \exp ( - \frac{d (t, t'
+))}{length_scale})) + environmental_amplitude^2 \delta ( t_1, \dots, t_S )) }
+parameterised by \eqn{heritable_amplitude > 0}, \eqn{length_scale > 0}, and
+\eqn{environmental_amplitude > 0}, where \eqn{t} is a position on the
+phylogeny, \eqn{d (t, t')} is the length of the shortest path from \eqn{t} to
+\eqn{t'}, \eqn{t_1, \dots, t_S} are positions corresponding to the \eqn{S}
+extant taxa, and \eqn{\delta ( \cdot ))} is the indicator function.
 }
 \examples{
 S <- 100
