@@ -370,8 +370,8 @@ library(ggpubr)
 Our analysis considers
 ![S = 128](https://latex.codecogs.com/png.latex?S%20%3D%20128 "S = 128")
 extant taxa with a shared evolutionary history defined by the phylogeny
-below. We label the root node and its children. Not that the `ape`
-package labels the root node as
+below. We label the root node and its children for future reference.
+Note that the `ape` package labels the root node
 ![S+1](https://latex.codecogs.com/png.latex?S%2B1 "S+1") by default.
 
 ``` r

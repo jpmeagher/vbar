@@ -135,7 +135,7 @@ library(HDInterval)
 library(ggpubr)
 ```
 
-Our analysis considers $S = 128$ extant taxa with a shared evolutionary history defined by the phylogeny below. We label the root node and its children. Not that the `ape` package labels the root node as $S+1$ by default.
+Our analysis considers $S = 128$ extant taxa with a shared evolutionary history defined by the phylogeny below. We label the root node and its children for future reference. Note that the `ape` package labels the root node $S+1$ by default.
 
 ```{r set_phylogeny}
 S <- 2^7
