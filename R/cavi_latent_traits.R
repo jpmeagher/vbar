@@ -1,4 +1,4 @@
-#' Individual-specific Latent Trait Precision
+#' Compute the Individual-specific Latent Trait Precision
 #'
 #' Computes the precision matrix for the approximate posterior distribution of
 #' individual-specific latent traits within the PLVM.
@@ -18,7 +18,7 @@
 #'   individual-specific latent traits under the approximate posterior
 #'   distribution.
 #' @export
-individual_specific_latent_trait_precision <- function(
+compute_individual_specific_latent_trait_precision <- function(
   auxiliary_trait_precision_vector,
   loading_outer_product_expectation,
   within_taxon_standard_deviation,
@@ -46,3 +46,61 @@ individual_specific_latent_trait_precision <- function(
     ) + diag(1 / within_taxon_standard_deviation^2)
 }
 
+#' Compute the Individual-specific Latent Trait Expectation
+#'
+#' Computes the expected value of the individual-specific latent trait  within
+#' the PLVM under the approximate posterior distribution.
+#'
+#' @param auxiliary_trait A D-dimensional vector of real values. The
+#'   individual-specific auxiliary trait.
+#' @param loading A DxL dimensional matrix of real values. The PLVM loading.
+#' @param taxon_specific_latent_trait An L-dimensional vector of real values.
+#'   The taxon-specific latent trait values.
+#' @inheritParams  compute_individual_specific_latent_trait_precision
+#' @param individual_specific_latent_trait_precision A symmetric  LxL matrix of
+#'   real values. The precision associated with individual-specific latent
+#'   traits.
+#'
+#' @return An L-dimensional vector of real values. The expected value of the
+#'   individual-specific latent trait under the approximate posterior
+#'   distributiÒon
+#' @export
+compute_individual_specific_latent_trait_expectation <- function(
+  auxiliary_trait,
+  loading,
+  taxon_specific_latent_trait,
+  auxiliary_trait_precision_vector,
+  individual_specific_latent_trait_precision,
+  within_taxon_standard_deviation,
+  perform_checks = TRUE
+){
+  D <- length(auxiliary_trait_precision_vector)
+  L <- length(within_taxon_standard_deviation)
+  if (perform_checks) {
+    checkmate::assert_numeric(
+      auxiliary_trait, any.missing = FALSE, len = D
+    )
+    checkmate::assert_matrix(
+      loading, mode = "numeric",
+      nrows = D, ncols = L, any.missing = FALSE
+    )
+    checkmate::assert_numeric(
+      taxon_specific_latent_trait, any.missing = FALSE, len = L
+    )
+    checkmate::assert_numeric(
+      auxiliary_trait_precision_vector, any.missing = FALSE
+    )
+    checkmate::assert_matrix(
+      individual_specific_latent_trait_precision, mode = "numeric",
+      nrows = L, ncols = L, any.missing = FALSE
+    )
+    checkmate::assert_numeric(
+      within_taxon_standard_deviation, lower = 0, upper = 1, any.missing = FALSE)
+  }
+  tmp <- t(loading) %*% diag(auxiliary_trait_precision_vector) %*% auxiliary_trait +
+    diag(1 / within_taxon_standard_deviation^2) %*% taxon_specific_latent_trait
+  c(solve(
+    individual_specific_latent_trait_precision,
+    tmp
+  ))
+}
