@@ -235,7 +235,8 @@ identifies extant taxa. Restricting
 ![h\_l](https://latex.codecogs.com/png.latex?h_l "h_l") and
 ![\\ell](https://latex.codecogs.com/png.latex?%5Cell "\ell") in this
 manner avoids scale invariance in the Gaussian likelihood, but still
-provides a flexible model for latent trait evolution.
+provides a flexible model for latent trait evolution, similar to the
+Phylogenetic Mixed Model for trait evolution.
 
 The OU process is a Gauss-Markov process. As such, it can be shown that
 
@@ -312,24 +313,25 @@ is the Automatic Relevance Determination (ARD) precision hyperparameter
 such that
 ![\\boldsymbol \\alpha = \\left( \\alpha\_1, \\dots, \\alpha\_L \\right)^\\top](https://latex.codecogs.com/png.latex?%5Cboldsymbol%20%5Calpha%20%3D%20%5Cleft%28%20%5Calpha_1%2C%20%5Cdots%2C%20%5Calpha_L%20%5Cright%29%5E%5Ctop "\boldsymbol \alpha = \left( \alpha_1, \dots, \alpha_L \right)^\top"),
 ![\\boldsymbol C\_w](https://latex.codecogs.com/png.latex?%5Cboldsymbol%20C_w "\boldsymbol C_w")
-is a fixed covariance matrix enforcing prior smoothness constraints on
+is a fixed covariance matrix enforcing smoothness constraints on
 ![\\boldsymbol w\_q](https://latex.codecogs.com/png.latex?%5Cboldsymbol%20w_q "\boldsymbol w_q"),
 and
 ![a\_\\lambda](https://latex.codecogs.com/png.latex?a_%5Clambda "a_\lambda")
 and
 ![b\_\\lambda](https://latex.codecogs.com/png.latex?b_%5Clambda "b_\lambda")
-are shape and rate hyperparameters for trait
+are shape and rate hyperparameters for precision associated with trait
 ![p](https://latex.codecogs.com/png.latex?p "p") taking values along a
 continuum, and we let
 ![\\delta \\left( 1 \\right)](https://latex.codecogs.com/png.latex?%5Cdelta%20%5Cleft%28%201%20%5Cright%29 "\delta \left( 1 \right)")
-denote the one point distribution with all its mass at
+denote the one-point distribution with all its mass at
 ![1](https://latex.codecogs.com/png.latex?1 "1").
 
 The PLVM also provides a direct approach to approach to ancestral
 reconstruction. Firstly, note that this model for trait evolution allows
-for within-taxon variation on the latent traits. Stripping away this
-stochastic effect on trait evolution allows us define taxon-specific
-manifest and auxiliary traits,
+for within-taxon variation on the latent traits, governed by
+![\\boldsymbol \\tau](https://latex.codecogs.com/png.latex?%5Cboldsymbol%20%5Ctau "\boldsymbol \tau").
+Stripping away this stochastic effect on trait evolution allows us
+define taxon-specific manifest and auxiliary traits,
 ![\\boldsymbol y\_s](https://latex.codecogs.com/png.latex?%5Cboldsymbol%20y_s "\boldsymbol y_s")
 and
 ![\\boldsymbol x\_s](https://latex.codecogs.com/png.latex?%5Cboldsymbol%20x_s "\boldsymbol x_s"),

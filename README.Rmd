@@ -80,7 +80,7 @@ $$
 0, & \text{otherwise,}
 \end{cases}
 $$
-identifies extant taxa. Restricting $h_l$ and $\ell$ in this manner avoids scale invariance in the Gaussian likelihood, but still provides a flexible model for latent trait evolution.  
+identifies extant taxa. Restricting $h_l$ and $\ell$ in this manner avoids scale invariance in the Gaussian likelihood, but still provides a flexible model for latent trait evolution, similar to the Phylogenetic Mixed Model for trait evolution.  
 
 The OU process is a Gauss-Markov process. As such, it can be shown that
 $$
@@ -111,9 +111,9 @@ $$
 \end{cases}
 \end{aligned}
 $$
-where $\alpha_l \in \mathbb R_+$ is the Automatic Relevance Determination (ARD) precision hyperparameter such that $\boldsymbol \alpha = \left( \alpha_1, \dots, \alpha_L \right)^\top$, $\boldsymbol C_w$ is a fixed covariance matrix enforcing prior smoothness constraints on $\boldsymbol w_q$, and $a_\lambda$ and $b_\lambda$ are shape and rate hyperparameters for trait $p$ taking values along a continuum, and we let $\delta \left( 1 \right)$ denote the one point distribution with all its mass at $1$.
+where $\alpha_l \in \mathbb R_+$ is the Automatic Relevance Determination (ARD) precision hyperparameter such that $\boldsymbol \alpha = \left( \alpha_1, \dots, \alpha_L \right)^\top$, $\boldsymbol C_w$ is a fixed covariance matrix enforcing smoothness constraints on $\boldsymbol w_q$, and $a_\lambda$ and $b_\lambda$ are shape and rate hyperparameters for precision associated with trait $p$ taking values along a continuum, and we let $\delta \left( 1 \right)$ denote the one-point distribution with all its mass at $1$.
 
-The PLVM also provides a direct approach to approach to ancestral reconstruction. Firstly, note that this model for trait evolution allows for within-taxon variation on the latent traits. Stripping away this stochastic effect on trait evolution allows us define taxon-specific manifest and auxiliary traits, $\boldsymbol y_s$ and $\boldsymbol x_s$, such that
+The PLVM also provides a direct approach to approach to ancestral reconstruction. Firstly, note that this model for trait evolution allows for within-taxon variation on the latent traits, governed by $\boldsymbol \tau$. Stripping away this stochastic effect on trait evolution allows us define taxon-specific manifest and auxiliary traits, $\boldsymbol y_s$ and $\boldsymbol x_s$, such that
 $$
 \boldsymbol x_s \sim \mathcal N \left( \boldsymbol W \left( \boldsymbol I_L - \Sigma_{\tau} \right)^{1/2} \boldsymbol f_s, \Lambda^{-1} \right)
 $$

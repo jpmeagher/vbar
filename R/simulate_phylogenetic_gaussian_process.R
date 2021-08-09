@@ -49,7 +49,7 @@ simulate_phylogenetic_ou <- function(
     sigma = heritable_amplitude, alpha = 1 / length_scale, theta = 0,
     ancestor = TRUE, root.value = root
     )
-  f[1:S] <- f[1:S] + rnorm(S, sd = environmental_amplitude)
+  f[1:S] <- f[1:S] + stats::rnorm(S, sd = environmental_amplitude)
   if (internal) {
     return(f)
   } else {

@@ -1,2 +1,48 @@
-
+#' Individual-specific Latent Trait Precision
+#'
+#' Computes the precision matrix for the approximate posterior distribution of
+#' individual-specific latent traits within the PLVM.
+#'
+#' @param auxiliary_trait_precision_vector A D-dimensional vector of positive
+#'   real values The precision parameters associated with each of the D
+#'   auxiliary traits.
+#' @param loading_outer_product_expectation An \eqn{LxLxD} dimensional array of
+#'   real values. The expected outer product of the loading under the
+#'   approximate posterior distribution.
+#' @param within_taxon_standard_deviation An L-dimensional vector of real values
+#'   on the interval \eqn{[0, 1]}. The within-taxon variation parameters for
+#'   each of the L latent traits.
+#' @inheritParams ou_kernel
+#'
+#' @return A symmetric LxL matrix of real values. The precision matrix of the
+#'   individual-specific latent traits under the approximate posterior
+#'   distribution.
+#' @export
+individual_specific_latent_trait_precision <- function(
+  auxiliary_trait_precision_vector,
+  loading_outer_product_expectation,
+  within_taxon_standard_deviation,
+  perform_checks = TRUE
+){
+  D <- length(auxiliary_trait_precision_vector)
+  L <- length(within_taxon_standard_deviation)
+  if (perform_checks) {
+    checkmate::assert_numeric(
+      auxiliary_trait_precision_vector, any.missing = FALSE
+      )
+    checkmate::assert_array(
+      loading_outer_product_expectation, mode = "numeric", any.missing = FALSE,
+      d = 3
+    )
+    checkmate::assert_true(
+      all(dim(loading_outer_product_expectation) == c(L, L, D))
+    )
+    checkmate::assert_numeric(
+      within_taxon_standard_deviation, lower = 0, upper = 1, any.missing = FALSE)
+  }
+  apply(
+    sweep(loading_outer_product_expectation, 3, auxiliary_trait_precision_vector, "*"),
+    c(1, 2), sum
+    ) + diag(1 / within_taxon_standard_deviation^2)
+}
 
