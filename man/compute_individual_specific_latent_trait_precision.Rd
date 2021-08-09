@@ -2,7 +2,7 @@
 % Please edit documentation in R/cavi_latent_traits.R
 \name{compute_individual_specific_latent_trait_precision}
 \alias{compute_individual_specific_latent_trait_precision}
-\title{Compute the Individual-specific Latent Trait Precision}
+\title{Compute Individual-specific Latent Trait Precision}
 \usage{
 compute_individual_specific_latent_trait_precision(
   auxiliary_trait_precision_vector,

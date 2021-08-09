@@ -67,3 +67,22 @@ test_that("individual specific latent trait expectation", {
   )
 })
 
+test_that("terminal taxon-specific latent trait precision", {
+  N <- 10
+  L <- 4
+  tau <- runif(L, 0, 0.5)
+  eta <- runif(L, 0, 0.5)
+
+  tmp <- N * (1 / tau^2) + (1 / eta^2)
+
+  expect_equal(
+    compute_terminal_taxon_specific_latent_trait_precision(
+      N = N,
+      within_taxon_standard_deviation = tau,
+      conditional_standard_deviation = eta
+    ),
+    tmp
+  )
+})
+
+

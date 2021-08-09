@@ -2,7 +2,7 @@
 % Please edit documentation in R/cavi_latent_traits.R
 \name{compute_individual_specific_latent_trait_expectation}
 \alias{compute_individual_specific_latent_trait_expectation}
-\title{Compute the Individual-specific Latent Trait Expectation}
+\title{Compute Individual-specific Latent Trait Expectation}
 \usage{
 compute_individual_specific_latent_trait_expectation(
   auxiliary_trait,
