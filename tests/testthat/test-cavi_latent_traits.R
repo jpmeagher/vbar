@@ -122,3 +122,25 @@ test_that("terminal taxon-specific latent trait expectation", {
   )
 })
 
+test_that("internal taxon-specific latent trait precision", {
+  N <- 2
+  L <- 4
+
+  eta <- runif(L, 0, 0.5)
+  eta_ch <- matrix(runif(N * L, 0, 0.5), nrow = N, ncol = L)
+  nu_ch <- matrix(runif(N * L, 0.5, 1), nrow = N, ncol = L)
+
+  tmp <- (nu_ch / eta_ch) %>%
+    magrittr::raise_to_power(2) %>%
+    apply(2, sum) %>%
+    magrittr::add(1 / eta^2)
+
+  expect_equal(
+    compute_internal_taxon_specific_latent_trait_precision(
+      children_conditional_expectation_weights = nu_ch,
+      children_conditional_standard_deviations = eta_ch,
+      conditional_standard_deviation = eta
+    ),
+    tmp
+  )
+})

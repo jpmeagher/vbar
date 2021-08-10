@@ -27,7 +27,7 @@ each of the L latent traits.}
 latent trait values associated with the parent taxon.}
 
 \item{conditional_expectation_weight}{An L-dimensional vector of real values
-on the interval \eqn{[0, 1]}. The weight of the latent trait vales for the
+on the interval \eqn{[0, 1]}. The weight of the latent trait values for the
 parent taxon in the conditional distribution for the taxon-specific latent
 trait.}
 
