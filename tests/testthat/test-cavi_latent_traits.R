@@ -137,9 +137,55 @@ test_that("internal taxon-specific latent trait precision", {
 
   expect_equal(
     compute_internal_taxon_specific_latent_trait_precision(
-      children_conditional_expectation_weights = nu_ch,
-      children_conditional_standard_deviations = eta_ch,
+      child_taxa_conditional_expectation_weights = nu_ch,
+      child_taxa_conditional_standard_deviations = eta_ch,
       conditional_standard_deviation = eta
+    ),
+    tmp
+  )
+})
+
+test_that("internal taxon-specific latent trait expectation", {
+  N <- 2
+  L <- 4
+
+  eta <- runif(L, 0, 0.5)
+  nu <- runif(L, 0.5, 1)
+  eta_ch <- matrix(runif(N * L, 0, 0.5), nrow = N, ncol = L)
+  nu_ch <- matrix(runif(N * L, 0.5, 1), nrow = N, ncol = L)
+
+  f_pa <- rnorm(L)
+  f <- nu * f_pa + rnorm(L, sd = eta)
+  f_ch <- sweep(
+    matrix(rnorm(N*L, sd = nu_ch), nrow = N, ncol = L, byrow = TRUE),
+    2, f, "+"
+  )
+
+  inv_S_f <- compute_internal_taxon_specific_latent_trait_precision(
+    child_taxa_conditional_expectation_weights = nu_ch,
+    child_taxa_conditional_standard_deviations = eta_ch,
+    conditional_standard_deviation = eta
+  )
+
+  tmp <- (nu_ch * f_ch / (eta_ch^2)) %>%
+    apply(2, sum) %>%
+    magrittr::add(
+      nu * f_pa / (eta^2)
+    ) %>%
+    magrittr::divide_by(
+      inv_S_f
+    )
+
+  expect_equal(
+    compute_internal_taxon_specific_latent_trait_expectation(
+      child_taxa_latent_traits = f_ch,
+      child_taxa_conditional_expectation_weights = nu_ch,
+      child_taxa_conditional_standard_deviations = eta_ch,
+      parent_taxon_latent_trait = f_pa,
+      conditional_expectation_weight = nu,
+      conditional_standard_deviation = eta,
+      latent_trait_precision = inv_S_f,
+      perform_checks = TRUE
     ),
     tmp
   )

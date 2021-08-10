@@ -202,11 +202,11 @@ compute_terminal_taxon_specific_latent_trait_expectation <- function(
 #' Computes the precision of taxon-specific latent traits at internal nodes of
 #' the phylogeny under the approximate posterior distribution for the PLVM.
 #'
-#' @param children_conditional_expectation_weights An L-dimensional vector of
+#' @param child_taxa_conditional_expectation_weights An L-dimensional vector of
 #'   real values on the interval \eqn{[0, 1]}. The weight of the taxon-specific latent trait
 #'   values in the conditional distribution of the latent
 #'   traits for its child taxa.
-#' @param children_conditional_standard_deviations An L-dimensional vector of
+#' @param child_taxa_conditional_standard_deviations An L-dimensional vector of
 #'   real values on the interval \eqn{[0, 1]}. The standard deviation of the taxon-specific
 #'   latent traits of child taxa conditional on the parent taxon.
 #' @inheritParams compute_terminal_taxon_specific_latent_trait_precision
@@ -214,25 +214,96 @@ compute_terminal_taxon_specific_latent_trait_expectation <- function(
 #' @return An L-dimensional vector of positive real values.
 #' @export
 compute_internal_taxon_specific_latent_trait_precision <- function(
-  children_conditional_expectation_weights,
-  children_conditional_standard_deviations,
+  child_taxa_conditional_expectation_weights,
+  child_taxa_conditional_standard_deviations,
   conditional_standard_deviation,
   perform_checks = TRUE
 ){
   L <- length(conditional_standard_deviation)
   if (perform_checks) {
     checkmate::assert_matrix(
-      children_conditional_expectation_weights, mode = "numeric",
+      child_taxa_conditional_expectation_weights, mode = "numeric",
       any.missing = FALSE, ncols = L
     )
+    checkmate::assert_numeric(
+      child_taxa_conditional_expectation_weights,
+      lower = 0, upper = 1
+    )
     checkmate::assert_matrix(
-      children_conditional_standard_deviations, mode = "numeric",
+      child_taxa_conditional_standard_deviations, mode = "numeric",
       any.missing = FALSE, ncols = L
+    )
+    checkmate::assert_numeric(
+      child_taxa_conditional_standard_deviations,
+      lower = 0, upper = 1
     )
     checkmate::assert_numeric(
       conditional_standard_deviation, lower = 0, upper = 1, any.missing = FALSE, len = L
     )
   }
-  colSums(children_conditional_expectation_weights^2 / children_conditional_standard_deviations^2) +
+  colSums(child_taxa_conditional_expectation_weights^2 / child_taxa_conditional_standard_deviations^2) +
     1 / conditional_standard_deviation^2
 }
+
+#' Compute Internal Taxon-specific Latent Trait Expectation
+#'
+#' Computes the expected value of taxon-specific latent traits at internal nodes
+#' of the phylogeny under the approximate posterior distribution for the PLVM.
+#'
+#' @param child_taxa_latent_traits An L-dimensional vector of real values. The latent trait values associated with child taxa.
+#' @inheritParams compute_internal_taxon_specific_latent_trait_precision
+#' @inheritParams compute_terminal_taxon_specific_latent_trait_expectation
+#'
+#' @return An L-dimensional vector of real values.
+#' @export
+compute_internal_taxon_specific_latent_trait_expectation <- function(
+  child_taxa_latent_traits,
+  child_taxa_conditional_expectation_weights,
+  child_taxa_conditional_standard_deviations,
+  parent_taxon_latent_trait,
+  conditional_expectation_weight,
+  conditional_standard_deviation,
+  latent_trait_precision,
+  perform_checks = TRUE
+){
+  L <- length(conditional_standard_deviation)
+  if (perform_checks) {
+    checkmate::assert_matrix(
+      child_taxa_latent_traits, mode = "numeric",
+      any.missing = FALSE, ncols = L
+    )
+    checkmate::assert_matrix(
+      child_taxa_conditional_expectation_weights, mode = "numeric",
+      any.missing = FALSE, ncols = L
+    )
+    checkmate::assert_numeric(
+      child_taxa_conditional_expectation_weights,
+      lower = 0, upper = 1
+    )
+    checkmate::assert_matrix(
+      child_taxa_conditional_standard_deviations, mode = "numeric",
+      any.missing = FALSE, ncols = L
+    )
+    checkmate::assert_numeric(
+      child_taxa_conditional_standard_deviations,
+      lower = 0, upper = 1
+    )
+    checkmate::assert_numeric(
+      parent_taxon_latent_trait, any.missing = FALSE, len = L
+    )
+    checkmate::assert_numeric(
+      conditional_expectation_weight, lower = 0, upper = 1, any.missing = FALSE, len = L
+    )
+    checkmate::assert_numeric(
+      conditional_standard_deviation, lower = 0, upper = 1, any.missing = FALSE, len = L
+    )
+    checkmate::assert_numeric(
+      latent_trait_precision, any.missing = FALSE, len = L, lower = 0
+    )
+  }
+  tmp <- colSums(child_taxa_conditional_expectation_weights * child_taxa_latent_traits / child_taxa_conditional_standard_deviations^2) +
+    conditional_expectation_weight * parent_taxon_latent_trait / conditional_standard_deviation^2
+  tmp / latent_trait_precision
+}
+
+

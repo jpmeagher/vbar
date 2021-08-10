@@ -5,19 +5,19 @@
 \title{Compute Internal Taxon-specific Latent Trait Precision}
 \usage{
 compute_internal_taxon_specific_latent_trait_precision(
-  children_conditional_expectation_weights,
-  children_conditional_standard_deviations,
+  child_taxa_conditional_expectation_weights,
+  child_taxa_conditional_standard_deviations,
   conditional_standard_deviation,
   perform_checks = TRUE
 )
 }
 \arguments{
-\item{children_conditional_expectation_weights}{An L-dimensional vector of
+\item{child_taxa_conditional_expectation_weights}{An L-dimensional vector of
 real values on the interval \eqn{[0, 1]}. The weight of the taxon-specific latent trait
 values in the conditional distribution of the latent
 traits for its child taxa.}
 
-\item{children_conditional_standard_deviations}{An L-dimensional vector of
+\item{child_taxa_conditional_standard_deviations}{An L-dimensional vector of
 real values on the interval \eqn{[0, 1]}. The standard deviation of the taxon-specific
 latent traits of child taxa conditional on the parent taxon.}
 
