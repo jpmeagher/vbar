@@ -85,4 +85,40 @@ test_that("terminal taxon-specific latent trait precision", {
   )
 })
 
+test_that("terminal taxon-specific latent trait expectation", {
+  N <- 111
+  L <- 4
+  tau <- runif(L, 0, 0.5)
+  eta <- runif(L, 0, 0.5)
+  nu <- runif(L, 0.5, 1)
+
+  f_pa <- rnorm(L)
+  f <- nu * f_pa + rnorm(L, sd = eta)
+  Z <- sweep(
+    matrix(rnorm(N*L, sd = tau), nrow = N, ncol = L, byrow = TRUE),
+    2, f, "+"
+    )
+
+  inv_S_f <- compute_terminal_taxon_specific_latent_trait_precision(
+    N = N,
+    within_taxon_standard_deviation = tau,
+    conditional_standard_deviation = eta
+  )
+  S_f <- 1 / inv_S_f
+
+  tmp <- S_f * (colSums(Z %*% diag(1 / tau^2)) + (nu * f_pa / (eta^2)))
+
+  expect_equal(
+    compute_terminal_taxon_specific_latent_trait_expectation(
+      individual_specific_latent_traits = Z,
+      within_taxon_standard_deviation = tau,
+      parent_taxon_latent_trait = f_pa,
+      conditional_expectation_weight = nu,
+      conditional_standard_deviation = eta,
+      latent_trait_precision = inv_S_f,
+      perform_checks = TRUE
+    ),
+    tmp
+  )
+})
 
