@@ -15,7 +15,7 @@
 #' tr <- ape::rtree(100)
 #' tr1 <- scale_phylo(tr)
 scale_phylo <- function(phy, max_dist = 1){
-  checkmate::expect_number(max_dist, lower = 0)
+  checkmate::assert_number(max_dist, lower = 0)
   m <- max(phytools::nodeHeights(phy))
   phy$edge.length <- max_dist * (phy$edge.length / m)
   phy

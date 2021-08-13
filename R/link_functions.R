@@ -1,0 +1,224 @@
+#' Ordinal Trait Link function
+#'
+#' Map an auxiliary trait to ordinal manifest trait.
+#'
+#' @param x An N-dimensional vector of real numbers. An auxiliary trait.
+#' @param cut_off_points A K+1 dimensional ordered vector of values. The cut off
+#'   points separating auxiliary traits into ordinal state.
+#' @inheritParams ou_kernel
+#'
+#' @return An N-dimensional vector of ordered factors with K levels. An ordinal
+#'   manifest trait.
+#' @export
+ordinal_link <- function(
+  x, cut_off_points,
+  perform_checks = TRUE
+){
+  if (perform_checks) {
+    checkmate::assert_numeric(x, any.missing = FALSE)
+    checkmate::assert_numeric(cut_off_points, any.missing = FALSE, sorted = TRUE)
+  }
+  y <- sapply(x, function(z) sum(z > cut_off_points))
+  factor(y, levels = 1:(length(cut_off_points) - 1), ordered = TRUE)
+}
+
+#' Ordinal Trait Inverse Link Function
+#'
+#' Map an ordinal manifest trait to an auxiliary trait.
+#'
+#' @param y An N-dimensional vector of ordered factors with K levels. An ordinal
+#'   manifest trait.
+#' @inheritParams ordinal_link
+#' @param mu An N-dimensional vector of real numbers. The expected value of the
+#'   underlying Gaussian random variable with variance 1.
+#' @param return_expectation Logical. Should manifest variables map to the
+#'   expected auxiliary variable or to values sampled from the truncated
+#'   Gaussian distribution.
+#' @param random_seed A single value, interpreted as an integer, or NULL.
+#'
+#' @return An N-dimensional vector of real numbers. An auxiliary trait.
+#' @export
+ordinal_inverse_link <- function(
+  y, cut_off_points,
+  mu,
+  return_expectation = TRUE, random_seed = NULL,
+  perform_checks = TRUE
+){
+  N <- length(y)
+  K <- length(cut_off_points) - 1
+  if (perform_checks) {
+    checkmate::assert_factor(
+      y, n.levels = K, ordered = TRUE, any.missing = FALSE
+    )
+    checkmate::assert_numeric(cut_off_points, any.missing = FALSE, sorted = TRUE)
+    checkmate::assert_numeric(mu, len = N, any.missing = FALSE)
+    checkmate::assert_logical(return_expectation)
+    checkmate::assert_number(random_seed, null.ok = TRUE)
+  }
+  y <- as.numeric(y)
+  if (return_expectation) {
+    x <- RcppTN::etn(
+      .mean = mu,
+      .low = cut_off_points[y], .high = cut_off_points[y + 1]
+    )
+  } else {
+    set.seed(random_seed)
+    x <- RcppTN::rtn(
+      .mean = mu,
+      .low = cut_off_points[y], .high = cut_off_points[y + 1]
+    )
+  }
+  x
+}
+
+#' Nominal Link Function
+#'
+#' Map the K-dimensional auxiliary trait to a nominal manifest trait.
+#'
+#' @param X A NxK matrix of real values
+#' @param levels An unordered factor vector of length K. The unordered
+#'   categories to which manifest traits can belong.
+#' @inheritParams ou_kernel
+#'
+#' @return An N-dimensional vector of unordered factors with K levels. A nominal
+#'   manifest trait.
+#' @export
+nominal_link <- function(
+  X, levels,
+  perform_checks = TRUE
+){
+  if (perform_checks) {
+    checkmate::assert_matrix(X, mode = "numeric", any.missing = FALSE)
+    checkmate::assert_factor(levels, empty.levels.ok = FALSE, n.levels = ncol(X))
+  }
+  y <- apply(X, 1, which.max)
+  levels[y]
+}
+
+#' Nominal Probit Normalising Constant
+#'
+#' Computes a Monte Carlo estimate for probability that a K-dimensional
+#' multinomial belongs to category \eqn{i} under the probit model given the mean
+#' of the underlying Gaussian distribution with variance 1.
+#'
+#' @param i A positive integer. The index identifying the multinomial category..
+#' @param mu A K-dimensional vector of real numbers. The expected value of the
+#'   auxiliary Gaussian mapping to the multinomial.
+#' @param n_samples A positive integer. The number of independent samples drawn
+#'   to obtain the Monte Carlo estimate.
+#' @inheritParams ordinal_inverse_link
+#'
+#' @return A real number on the unit interval.
+#' @export
+nominal_probit_normalising_constant <- function(
+  i, mu, n_samples = 1000,
+  random_seed = NULL,
+  perform_checks = TRUE
+){
+  if (perform_checks == TRUE) {
+    K <- length(mu)
+    checkmate::assert_integerish(
+      i, lower = 1, upper = K, len = 1, any.missing = FALSE
+    )
+    checkmate::assert_vector(
+      mu, strict = TRUE, any.missing = FALSE
+    )
+    checkmate::assert_count(n_samples, positive = TRUE)
+  }
+  set.seed(random_seed)
+  u <- stats::rnorm(n_samples)
+  z <- sapply(u, function(x) x + mu[i] - mu[-i])
+  mean(apply(
+    stats::pnorm(z), 2, prod
+  ))
+}
+
+#' Expectation of multinomial probit auxiliary variables
+#'
+#' Provides Monte Carlo estimates for the expected value of auxiliary variables in the
+#' multinomial probit model given the manifest variable belongs in category \eqn{i} and the K-dimensional mean of the
+#' underlying Gaussian distribution with variance 1.
+#'
+#' @inheritParams nominal_probit_normalising_constant
+#'
+#' @return A K-dimensional vector of real values.
+#' @export
+nominal_probit_auxiliary_expectation <- function(
+  i, mu, n_samples = 1000,
+  random_seed = NULL,
+  perform_checks = TRUE
+){
+  K <- length(mu)
+  x_tilde <- rep(NA, K)
+  Z <- nominal_probit_normalising_constant(
+    i = i, mu = mu, n_samples = n_samples,
+    random_seed = random_seed,
+    perform_checks = perform_checks
+  )
+  set.seed(random_seed)
+  u <- stats::rnorm(n_samples)
+  z <- sapply(u, function(x) x + mu[i] - mu[-i])
+  density <- stats::dnorm(z)
+  cumulative_density <- stats:: pnorm(z)
+  tmp <- sapply(
+    1:(K-1),
+    function(k){
+      mean(apply(rbind(density[k, ], cumulative_density[-k, ]), 2, prod))
+    })
+  x_tilde[-i] <- mu[-i] - (tmp / Z)
+  x_tilde[i] <- mu[i] + sum(mu[-i] - x_tilde[-i])
+  x_tilde
+}
+
+#' Nominal Inverse Link Function
+#'
+#' Map a nominal manifest trait to auxiliary traits.
+#'
+#' @param y An N-dimensional vector of unordered factors with K levels. A nominal
+#'   manifest trait.
+#' @inheritParams ordinal_inverse_link
+#' @inheritParams nominal_probit_auxiliary_expectation
+#'
+#' @return An NxK matrix of real values.
+#' @export
+nominal_inverse_link <- function(
+  y, mu, n_samples = 1000,
+  return_expectation = TRUE, random_seed = NULL,
+  perform_checks = TRUE
+){
+  N <- length(y)
+  K <- nlevels(y)
+  if (perform_checks) {
+    checkmate::assert_factor(y, ordered = FALSE, empty.levels.ok = FALSE, any.missing = FALSE)
+    checkmate::assert_matrix(
+      mu,
+      mode = "numeric", nrows = N, ncols = K,
+      any.missing = FALSE
+    )
+    checkmate::assert_logical(return_expectation)
+    checkmate::assert_number(random_seed, null.ok = TRUE)
+  }
+  y <- as.numeric(y)
+  if (return_expectation) {
+    X <- t(
+      sapply(1:N, function(n){
+        nominal_probit_auxiliary_expectation(
+          i = y[n], mu = mu[n, ], n_samples = n_samples,
+          random_seed = random_seed,
+          perform_checks = FALSE
+        )
+      })
+    )
+  } else {
+    X <- t(
+      sapply(1:N, function(i){
+        repeat{
+          x <- stats::rnorm(K, mean = mu[i, ])
+          if (which.max(x) == y[i]) break
+        }
+        x
+      })
+    )
+  }
+  X
+}
