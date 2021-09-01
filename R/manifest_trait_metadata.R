@@ -256,6 +256,10 @@ specify_manifest_trait_metadata <- function(
       manifest_D_prime == auxiliary_D_prime,
       .var.name = "Auxiliary trait index matches to manifest trait dimensions"
     )
+    checkmate::assert_true(
+      all(unlist(auxiliary_trait_index) %in% 1:auxiliary_D_prime),
+      .var.name = "Auxiliary trait index runs from 1 to D'"
+    )
   }
   out <- data.frame(
     trait_names = trait_names,

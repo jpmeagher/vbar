@@ -179,6 +179,22 @@ test_that("Manifest trait metadata correctly specified", {
   expect_error(
     specify_manifest_trait_metadata(
       n_traits = P, trait_names = tn, trait_type = tt,
+      trait_levels = K,
+      manifest_trait_index = ind_mt,
+      auxiliary_trait_index = list(
+        ord = 1L, nom = 1 + 1:3, con = 5L, fvt = 10 + 1:32
+      ),
+      link_functions = g,
+      inverse_link_functions = g_inv,
+      cut_off_points = gamma, categories = cat,
+      manifest_trait_df = mt,
+      perform_checks = TRUE
+    )
+  )
+
+  expect_error(
+    specify_manifest_trait_metadata(
+      n_traits = P, trait_names = tn, trait_type = tt,
       trait_levels = c(4, 3, 1, NA),
       manifest_trait_index = ind_mt, auxiliary_trait_index = ind_at,
       link_functions = g,
