@@ -1,8 +1,8 @@
-test_that("plvm initialised for cavi", {
+test_that("Loading initialisation works", {
   P <- 4
   L <- 4
   D_p <-
-  tn <- c("ord", "nom", "con", "fvt")
+    tn <- c("ord", "nom", "con", "fvt")
   tt <- factor(tn, levels = c("ord", "nom", "con", "fvt"))
   ind_mt <- list(
     ord = 2L, nom = 3L, con = 4L, fvt = 5:36
@@ -56,16 +56,6 @@ test_that("plvm initialised for cavi", {
     perform_checks = TRUE
   )
 
-  plvm <- initialise_plvm(
-    manifest_trait_df = mt, metadata = meta,
-    L = L,
-    loading_prior_correlation = diag(D_p),
-    auxiliary_traits = NULL,
-    perform_checks = TRUE
-  )
-
-  checkmate::expect_list(plvm)
-
   X <- initialise_auxiliary_traits(
     n_traits = nrow(meta),
     manifest_trait_df = mt,
@@ -79,15 +69,38 @@ test_that("plvm initialised for cavi", {
     perform_checks = TRUE
   )
 
-  expect_equal(
-    X,
-    initialise_plvm(
-      manifest_trait_df = mt, metadata = meta,
-      L = L,
-      loading_prior_correlation = diag(D_p),
-      auxiliary_traits = X,
-      perform_checks = TRUE
-    )$auxiliary_traits
+  C_w <- diag(D_p)
+  x <- seq(0, 1, length.out = length(ind_at[[4]]))
+  d <- abs(outer(x, x, "-"))
+  ell <- 1 / (2 * pi)
+  C_w[ind_at[[4]], ind_at[[4]]] <-  (exp_quad_kernel(d, 1, ell) + (1e-6 * diag(length(ind_at[[4]])))) / (1 + 1e-6)
+
+  alpha <- rgamma(L, shape = 1, rate = 1)
+
+  W <- initialise_loading(
+    D_prime = D_p, L = L,
+    ard_precision = alpha, loading_prior_correlation = C_w,
+    loading = NULL, method = "random",
+    auxiliary_traits = NULL,
+    perform_checks = TRUE
   )
 
+  checkmate::expect_matrix(
+    W, mode = "numeric", any.missing = FALSE,
+    nrows = D_p, ncols = L
+  )
+
+  W <- initialise_loading(
+    D_prime = D_p, L = L,
+    ard_precision = alpha, loading_prior_correlation = C_w,
+    loading = NULL, method = "pca",
+    auxiliary_traits = X,
+    perform_checks = TRUE
+  )
+
+  pca <- prcomp(X)
+  expect_equal(
+    W,
+    sweep(pca$rotation[, 1:L], 2, pca$sdev[1:L], "*")
+  )
 })

@@ -222,3 +222,43 @@ nominal_inverse_link <- function(
   }
   X
 }
+
+#' Initialise Auxiliary Traits
+#'
+#' Initialise auxiliary traits in a PLVM given manifest traits and metadata.
+#'
+#' @inheritParams specify_manifest_trait_metadata
+#' @param auxiliary_traits An NxD' matrix of real numbers. The initial matrix of
+#'   auxiliary traits. When non null checks that the auxiliary trait matrix is
+#'   of the correct type and size.
+#'
+#' @return An NxD' matrix of real numbers. The initial matrix of auxiliary
+#'   traits.
+initialise_auxiliary_traits <- function(
+  n_traits,
+  manifest_trait_df,
+  trait_names, trait_type, trait_levels,
+  manifest_trait_index,
+  auxiliary_trait_index,
+  inverse_link_functions,
+  auxiliary_traits = NULL,
+  perform_checks = TRUE
+){
+  N <- nrow(manifest_trait_df)
+  D_prime <- sum(sapply(auxiliary_trait_index, length))
+  if (perform_checks) {
+    checkmate::assert_matrix(
+      auxiliary_traits, nrows = N, ncols = D_prime,
+      mode = "numeric", any.missing = FALSE, null.ok = TRUE
+    )
+  }
+  if (!is.null(auxiliary_traits)) return(auxiliary_traits)
+  auxiliary_traits <- matrix(NA, nrow = N, ncol = D_prime)
+  for (i in 1:n_traits) {
+    auxiliary_traits[, auxiliary_trait_index[[i]]] <-
+      inverse_link_functions[[i]](
+        manifest_trait_df[, manifest_trait_index[[i]]]
+      )
+  }
+  auxiliary_traits
+}

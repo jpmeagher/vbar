@@ -2,12 +2,12 @@
 % Please edit documentation in R/initialise_plvm.R
 \name{initialise_plvm}
 \alias{initialise_plvm}
-\title{Initialise a PLVM}
+\title{Initialise CAVI for a PLVM}
 \usage{
 initialise_plvm(
   manifest_trait_df,
   metadata,
-  latent_dimension,
+  L,
   loading_prior_correlation,
   auxiliary_traits = NULL,
   perform_checks = TRUE
@@ -18,11 +18,13 @@ initialise_plvm(
 allows for a non-exhaustive series of checks comparing metadata provided to
 that implicit in the manifest traits.}
 
-\item{metadata}{A data frame. Contains all the metadata required to map a set of manifest traits to the PLVM auxiliary traits..}
+\item{metadata}{A data frame. Contains all the metadata required to map a set
+of manifest traits to the PLVM auxiliary traits..}
 
-\item{latent_dimension}{An integer. The dimension of latent traits.}
+\item{L}{An integer. The dimension of latent traits.}
 
-\item{loading_prior_correlation}{A D'xD' correlation matrix. The correlation within each loading under the Gaussian prior.}
+\item{loading_prior_correlation}{A D'xD' correlation matrix. The correlation
+within loadings under the Gaussian prior.}
 
 \item{auxiliary_traits}{An NxD' matrix of real numbers. The initial matrix of
 auxiliary traits. When non null checks that the auxiliary trait matrix is
@@ -35,7 +37,8 @@ correctly.}
 A list of intital values for a PLVM..
 }
 \description{
-Specify a set of initial values for Variational Inference on the Phylogenetic Latent Variable Model (PLVM).
+Specify a set of initial values for Co-ordinate Ascent Variational Inference
+(CAVI) on the Phylogenetic Latent Variable Model (PLVM).
 }
 \seealso{
 specify_manifest_trait_metadata
