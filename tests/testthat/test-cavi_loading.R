@@ -104,3 +104,28 @@ test_that("Loading initialisation works", {
     sweep(pca$rotation[, 1:L], 2, pca$sdev[1:L], "*")
   )
 })
+
+test_that("ARD precision initialises", {
+  L <- 4
+  alpha <- rgamma(L, shape = 1, rate = 1)
+
+  checkmate::expect_numeric(
+    initialise_loading_ard_precision(
+      L = L,
+      ard_prior_shape = 2, ard_prior_rate = 2,
+      ard_precision = NULL,
+      perform_checks = TRUE
+    ),
+    len = L, lower = 0, any.missing = FALSE
+  )
+
+  expect_equal(
+    alpha,
+    initialise_loading_ard_precision(
+      L = L,
+      ard_prior_shape = 2, ard_prior_rate = 2,
+      ard_precision = alpha,
+      perform_checks = TRUE
+    )
+  )
+})

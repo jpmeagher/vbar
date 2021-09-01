@@ -26,11 +26,11 @@ precision hyper-parameters on the loadings.}
 \item{loading_prior_correlation}{A D'xD' correlation matrix. The correlation
 within loadings under the Gaussian prior.}
 
-\item{loading}{A D'xL matrix of real values. The initial loading matrix.
-When non null checks that the loading matrix is
-  of the correct type and size.}
+\item{loading}{A D'xL matrix of real values. The initial loading matrix. When
+non null checks that the loading matrix is of the correct type and size.}
 
-\item{method}{A string. Either \eqn{"random"} or \eqn{"pca"} indicating the type of initialisation adopted.}
+\item{method}{A string. Either \eqn{"random"} or \eqn{"pca"} indicating the
+type of initialisation adopted.}
 
 \item{auxiliary_traits}{An NxD' matrix of real numbers. The initial matrix of
 auxiliary traits. Only required when \eqn{method == "pca"}}
