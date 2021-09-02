@@ -6,7 +6,8 @@
 \usage{
 gaussian_outer_product_expectation(
   expected_value,
-  covariance_matrix,
+  covariance_matrix = NULL,
+  precision_matrix = NULL,
   perform_checks = TRUE
 )
 }
@@ -14,8 +15,13 @@ gaussian_outer_product_expectation(
 \item{expected_value}{A real-valued vector length \eqn{L}. The expected value
 of the Gaussian random variable.}
 
-\item{covariance_matrix}{A \eqn{L \times L} covariance matrix. The covariance
-matrix for the Gaussian random variable.}
+\item{covariance_matrix}{Either a \eqn{L \times L} covariance matrix or NULL
+if the precision matrix is available instead. The covariance matrix for the
+Gaussian random variable.}
+
+\item{precision_matrix}{Either a \eqn{L \times L} precision matrix or NULL if
+the covariance matrix has been provided.. The precision matrix for the
+Gaussian random variable.}
 
 \item{perform_checks}{Logical. Check if function inputs are specified
 correctly.}

@@ -129,3 +129,77 @@ test_that("ARD precision initialises", {
     )
   )
 })
+
+test_that("Conditional Correlation", {
+  ind_at <- list(
+    ord = 1L, nom = 1 + 1:3, con = 5L, fvt = 5 + 1:32
+  )
+  D_p <- sum(sapply(ind_at, length))
+
+  C_w <- diag(D_p)
+  x <- seq(0, 1, length.out = length(ind_at[[4]]))
+  d <- abs(outer(x, x, "-"))
+  ell <- 1 / (2 * pi)
+  C_w[ind_at[[4]], ind_at[[4]]] <-  (exp_quad_kernel(d, 1, ell) + (1e-6 * diag(length(ind_at[[4]])))) / (1 + 1e-6)
+
+  c_star <- compute_scaled_conditional_row_variance(C_w)
+  i <- 10
+  for(i in 1:D_p) {
+    expect_equal(
+      c_star[i],
+      c(C_w[i, i] - (C_w[i, -i] %*% (solve(C_w[-i, -i] )%*% C_w[-i, i]))),
+      tolerance = 1e-4
+    )
+  }
+})
+
+test_that("Loading row precision", {
+  ind_at <- list(
+    ord = 1L, nom = 1 + 1:3, con = 5L, fvt = 5 + 1:32
+  )
+  D_p <- sum(sapply(ind_at, length))
+
+  C_w <- diag(D_p)
+  x <- seq(0, 1, length.out = length(ind_at[[4]]))
+  d <- abs(outer(x, x, "-"))
+  ell <- 1 / (2 * pi)
+  C_w[ind_at[[4]], ind_at[[4]]] <-  (exp_quad_kernel(d, 1, ell) + (1e-6 * diag(length(ind_at[[4]])))) / (1 + 1e-6)
+
+  c_star <- compute_scaled_conditional_row_variance(C_w)
+
+  L <- 4
+  alpha <- initialise_loading_ard_precision(
+    L = L,
+    ard_prior_shape = 2, ard_prior_rate = 2
+  )
+
+  P <- 4
+  tn <- c("ord", "nom", "con", "fvt")
+  tt <- factor(tn, levels = c("ord", "nom", "con", "fvt"))
+
+  lambda <- initialise_precision(
+    n_traits = P, trait_names = tn,  trait_type = tt,
+    precision_prior_shape = 1, precision_prior_rate = 0.01,
+    precision = NULL,
+    perform_checks = TRUE
+  )
+  lambda_vector <- map_precision_to_auxiliary_traits(
+    precision = lambda, auxiliary_trait_index = ind_at
+  )
+
+  N <- 500
+  Z <- matrix(rnorm(N*L), nrow = N, ncol = L)
+  ZTZ <- t(Z) %*% Z
+
+  for(i in 1:D_p) {
+    expect_equal(compute_loading_row_precision(
+      total_individual_specific_latent_trait_outer_product_expectation = ZTZ,
+      precision = lambda_vector[i],
+      ard_precision = alpha,
+      scaled_conditional_row_variance = c_star[i],
+      perform_checks = TRUE
+    ),
+    (lambda_vector[i] * ZTZ)+ (diag(alpha) / c_star[i])
+    )
+  }
+})

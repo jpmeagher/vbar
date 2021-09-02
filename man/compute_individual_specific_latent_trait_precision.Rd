@@ -5,14 +5,14 @@
 \title{Compute Individual-specific Latent Trait Precision}
 \usage{
 compute_individual_specific_latent_trait_precision(
-  auxiliary_trait_precision_vector,
+  precision_vector,
   loading_outer_product_expectation,
   within_taxon_standard_deviation,
   perform_checks = TRUE
 )
 }
 \arguments{
-\item{auxiliary_trait_precision_vector}{A D-dimensional vector of positive
+\item{precision_vector}{A D-dimensional vector of positive
 real values The precision parameters associated with each of the D
 auxiliary traits.}
 

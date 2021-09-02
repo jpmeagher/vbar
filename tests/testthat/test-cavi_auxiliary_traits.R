@@ -325,3 +325,32 @@ test_that("Auxiliary Precision Initialised", {
     )
   )
 })
+
+test_that("precision maps to vector", {
+  P <- 4
+  tn <- c("ord", "nom", "con", "fvt")
+  tt <- factor(tn, levels = c("ord", "nom", "con", "fvt"))
+  ind_at <- list(
+    ord = 1L, nom = 1 + 1:3, con = 5L, fvt = 5 + 1:32
+  )
+  D_p <- sum(sapply(ind_at, length))
+
+  lambda <- initialise_precision(
+    n_traits = P, trait_names = tn,  trait_type = tt,
+    precision_prior_shape = 1, precision_prior_rate = 0.01,
+    precision = NULL,
+    perform_checks = TRUE
+  )
+
+  lambda_vector <- map_precision_to_auxiliary_traits(
+    precision = lambda, auxiliary_trait_index = ind_at
+  )
+
+  for(i in 1:P) {
+    expect_equal(
+      lambda[tn[i]],
+      unique(lambda_vector[ind_at[[tn[i]]]]),
+      ignore_attr = TRUE
+    )
+  }
+})

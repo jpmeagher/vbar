@@ -69,6 +69,8 @@ test_that("plvm initialised for cavi", {
     ard_precision = NULL,
     ard_prior_shape = 1, ard_prior_rate = 1,
     loading = NULL, method = "random",
+    precision_prior_shape = 1, precision_prior_rate = 0.01,
+    precision = NULL,
     perform_checks = TRUE
   )
 
@@ -135,4 +137,29 @@ test_that("plvm initialised for cavi", {
       perform_checks = TRUE
     )$loading
   )
+
+  lambda <- initialise_precision(
+    n_traits = P, trait_names = tn,  trait_type = tt,
+    precision_prior_shape = 1, precision_prior_rate = 0.01,
+    precision = NULL,
+    perform_checks = TRUE
+  )
+
+  expect_equal(
+    lambda,
+    initialise_plvm(
+      manifest_trait_df = mt, metadata = meta,
+      L = L,
+      loading_prior_correlation = C_w,
+      auxiliary_traits = NULL,
+      ard_precision = NULL,
+      ard_prior_shape = 1, ard_prior_rate = 1,
+      loading = NULL, method = "random",
+      precision_prior_shape = 1, precision_prior_rate = 0.01,
+      precision = lambda,
+      perform_checks = TRUE
+    )$precision
+  )
+
+
 })

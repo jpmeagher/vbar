@@ -8,7 +8,7 @@ compute_individual_specific_latent_trait_expectation(
   auxiliary_trait,
   loading,
   taxon_specific_latent_trait,
-  auxiliary_trait_precision_vector,
+  precision_vector,
   individual_specific_latent_trait_precision,
   within_taxon_standard_deviation,
   perform_checks = TRUE
@@ -23,7 +23,7 @@ individual-specific auxiliary trait.}
 \item{taxon_specific_latent_trait}{An L-dimensional vector of real values.
 The taxon-specific latent trait values.}
 
-\item{auxiliary_trait_precision_vector}{A D-dimensional vector of positive
+\item{precision_vector}{A D-dimensional vector of positive
 real values The precision parameters associated with each of the D
 auxiliary traits.}
 

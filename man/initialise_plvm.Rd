@@ -15,6 +15,9 @@ initialise_plvm(
   ard_prior_rate = 1,
   loading = NULL,
   method = "random",
+  precision_prior_shape = 1,
+  precision_prior_rate = 0.01,
+  precision = NULL,
   perform_checks = TRUE
 )
 }
@@ -49,6 +52,17 @@ non null checks that the loading matrix is of the correct type and size.}
 
 \item{method}{A string. Either \eqn{"random"} or \eqn{"pca"} indicating the
 type of initialisation adopted.}
+
+\item{precision_prior_shape}{A positive real-valued scalar. The shape of the
+Gamma prior on the precision.}
+
+\item{precision_prior_rate}{A positive real-valued scalar. The rate of the
+Gamma prior on the precision.}
+
+\item{precision}{A vector length \eqn{n_traits} taking positive real values.
+The Precision with which auxiliary traits are observed. Precision
+parameters for discrete traits are fixed at 1. When non-null checks that
+the precision parameters have been specified correctly.}
 
 \item{perform_checks}{Logical. Check if function inputs are specified
 correctly.}

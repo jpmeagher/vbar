@@ -18,7 +18,7 @@ test_that("individual specific latent trait precision", {
 
   expect_equal(
     compute_individual_specific_latent_trait_precision(
-      auxiliary_trait_precision_vector = lambda,
+      precision_vector = lambda,
       loading_outer_product_expectation = W_outer,
       within_taxon_standard_deviation = tau,
       perform_checks = TRUE
@@ -37,7 +37,7 @@ test_that("individual specific latent trait expectation", {
   tau <- runif(L, 0, 0.5)
 
   inv_S_z <- compute_individual_specific_latent_trait_precision(
-    auxiliary_trait_precision_vector = lambda,
+    precision_vector = lambda,
     loading_outer_product_expectation = W_outer,
     within_taxon_standard_deviation = tau,
     perform_checks = TRUE
@@ -58,7 +58,7 @@ test_that("individual specific latent trait expectation", {
       auxiliary_trait = x,
       loading = W,
       taxon_specific_latent_trait = f,
-      auxiliary_trait_precision_vector = lambda,
+      precision_vector = lambda,
       individual_specific_latent_trait_precision = inv_S_z,
       within_taxon_standard_deviation = tau,
       perform_checks = TRUE

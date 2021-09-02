@@ -6,6 +6,7 @@
 #' @inheritParams initialise_auxiliary_traits
 #' @inheritParams initialise_loading
 #' @inheritParams initialise_loading_ard_precision
+#' @inheritParams initialise_precision
 #' @param metadata A data frame. Contains all the metadata required to map a set
 #'   of manifest traits to the PLVM auxiliary traits..
 #'
@@ -20,6 +21,8 @@ initialise_plvm <- function(
   ard_precision = NULL,
   ard_prior_shape = 1, ard_prior_rate = 1,
   loading = NULL, method = "random",
+  precision_prior_shape = 1, precision_prior_rate = 0.01,
+  precision = NULL,
   perform_checks = TRUE
 ){
   metadata <- specify_manifest_trait_metadata(
@@ -69,13 +72,30 @@ initialise_plvm <- function(
     auxiliary_traits = X,
     perform_checks = perform_checks
   )
+  # Precision
+  lambda <- initialise_precision(
+    n_traits = P,
+    trait_names = metadata$trait_names,
+    trait_type = metadata$trait_type,
+    precision_prior_shape = precision_prior_shape,
+    precision_prior_rate = precision_prior_rate,
+    precision = precision,
+    perform_checks = perform_checks
+  )
+  lambda_vector <- map_precision_to_auxiliary_traits(
+    precision = lambda,
+    auxiliary_trait_index = metadata$auxiliary_trait_index,
+    perform_checks = perform_checks
+  )
 
   out <- list(
     auxiliary_traits = X,
     ard_prior_shape = ard_prior_shape, ard_prior_rate = ard_prior_rate,
     ard_precision = alpha,
     loading_prior_correlation = loading_prior_correlation,
-    loading = W
+    loading = W,
+    precision = lambda,
+    precision_vector = lambda_vector
   )
   out
 }

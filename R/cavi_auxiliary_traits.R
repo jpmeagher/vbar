@@ -307,3 +307,38 @@ initialise_precision <- function(
  names(precision) <- trait_names
  precision
 }
+
+#' Map Precision Parameters to Auxiliary Traits
+#'
+#' Create a vector of precision parameters corresponding to the puxiliary traits.
+#'
+#' @param precision A vector length \eqn{n_traits} taking positive real values.
+#'   The Precision with which auxiliary traits are observed. Precision
+#'   parameters for discrete traits are fixed at 1.
+#' @inheritParams specify_manifest_trait_metadata
+#'
+#' @return A D'-dimensional vector of positive real values. The precision along each dimension of the auxiliary traits.
+map_precision_to_auxiliary_traits <- function(
+  precision, auxiliary_trait_index,
+  perform_checks = TRUE
+){
+  P <- length(auxiliary_trait_index)
+  if (perform_checks) {
+    checkmate::assert_numeric(
+      precision, lower = 0, any.missing = FALSE, null.ok = TRUE,
+      len = P, names = "named"
+    )
+    checkmate::assert_list(
+      auxiliary_trait_index, type = "numeric", any.missing = FALSE,
+      names = "named"
+    )
+    checkmate::assert_set_equal(names(precision), names(auxiliary_trait_index))
+  }
+  D_prime <- sum(sapply(auxiliary_trait_index, length))
+  trait_names <- names(precision)
+  precision_vector <- rep(NA, D_prime)
+  for (i in 1:P) {
+    precision_vector[auxiliary_trait_index[[trait_names[i]]]] <- precision[trait_names[i]]
+  }
+  precision_vector
+}
