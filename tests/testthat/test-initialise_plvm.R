@@ -1,7 +1,6 @@
 test_that("plvm initialised for cavi", {
   P <- 4
   L <- 4
-  D_p <-
   tn <- c("ord", "nom", "con", "fvt")
   tt <- factor(tn, levels = c("ord", "nom", "con", "fvt"))
   ind_mt <- list(
@@ -56,11 +55,20 @@ test_that("plvm initialised for cavi", {
     perform_checks = TRUE
   )
 
+  C_w <- diag(D_p)
+  x <- seq(0, 1, length.out = length(ind_at[[4]]))
+  d <- abs(outer(x, x, "-"))
+  ell <- 1 / (2 * pi)
+  C_w[ind_at[[4]], ind_at[[4]]] <-  (exp_quad_kernel(d, 1, ell) + (1e-6 * diag(length(ind_at[[4]])))) / (1 + 1e-6)
+
   plvm <- initialise_plvm(
     manifest_trait_df = mt, metadata = meta,
     L = L,
-    loading_prior_correlation = diag(D_p),
+    loading_prior_correlation = C_w,
     auxiliary_traits = NULL,
+    ard_precision = NULL,
+    ard_prior_shape = 1, ard_prior_rate = 1,
+    loading = NULL, method = "random",
     perform_checks = TRUE
   )
 
@@ -90,4 +98,41 @@ test_that("plvm initialised for cavi", {
     )$auxiliary_traits
   )
 
+  alpha <- rgamma(L, shape = 1, rate = 1)
+
+  W <- initialise_loading(
+    D_prime = D_p, L = L,
+    ard_precision = alpha, loading_prior_correlation = C_w,
+    loading = NULL, method = "random",
+    auxiliary_traits = NULL,
+    perform_checks = TRUE
+  )
+
+  expect_equal(
+    alpha,
+    initialise_plvm(
+      manifest_trait_df = mt, metadata = meta,
+      L = L,
+      loading_prior_correlation = C_w,
+      auxiliary_traits = NULL,
+      ard_precision = alpha,
+      ard_prior_shape = 1, ard_prior_rate = 1,
+      loading = NULL, method = "random",
+      perform_checks = TRUE
+    )$ard_precision
+  )
+
+  expect_equal(
+    W,
+    initialise_plvm(
+      manifest_trait_df = mt, metadata = meta,
+      L = L,
+      loading_prior_correlation = C_w,
+      auxiliary_traits = NULL,
+      ard_precision = NULL,
+      ard_prior_shape = 1, ard_prior_rate = 1,
+      loading = W, method = "random",
+      perform_checks = TRUE
+    )$loading
+  )
 })

@@ -41,6 +41,7 @@ initialise_loading <- function(
     )
     checkmate::assert_choice(method, choices = c("pca", "random"))
   }
+  if (!is.null(loading)) return(loading)
   if (method == "pca") {
     if (is.null(auxiliary_traits)) {
       stop("Auxiliary traits required to initialise PLVM at principal components")

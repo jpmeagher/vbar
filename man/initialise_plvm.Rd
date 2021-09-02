@@ -10,6 +10,11 @@ initialise_plvm(
   L,
   loading_prior_correlation,
   auxiliary_traits = NULL,
+  ard_precision = NULL,
+  ard_prior_shape = 1,
+  ard_prior_rate = 1,
+  loading = NULL,
+  method = "random",
   perform_checks = TRUE
 )
 }
@@ -29,6 +34,21 @@ within loadings under the Gaussian prior.}
 \item{auxiliary_traits}{An NxD' matrix of real numbers. The initial matrix of
 auxiliary traits. When non null checks that the auxiliary trait matrix is
 of the correct type and size.}
+
+\item{ard_precision}{An L-dimensional vector of real numbers. The initial ARD
+precision hyper-parameters on the loadings.}
+
+\item{ard_prior_shape}{A positive real-valued scalar. The shape of the Gamma
+prior on the ARD precision hyper-parameters}
+
+\item{ard_prior_rate}{A positive real-valued scalar. The rate of the Gamma
+prior on the ARD precision hyper-parameters}
+
+\item{loading}{A D'xL matrix of real values. The initial loading matrix. When
+non null checks that the loading matrix is of the correct type and size.}
+
+\item{method}{A string. Either \eqn{"random"} or \eqn{"pca"} indicating the
+type of initialisation adopted.}
 
 \item{perform_checks}{Logical. Check if function inputs are specified
 correctly.}

@@ -5,6 +5,7 @@
 #'
 #' @inheritParams initialise_auxiliary_traits
 #' @inheritParams initialise_loading
+#' @inheritParams initialise_loading_ard_precision
 #' @param metadata A data frame. Contains all the metadata required to map a set
 #'   of manifest traits to the PLVM auxiliary traits..
 #'
@@ -16,6 +17,9 @@ initialise_plvm <- function(
   manifest_trait_df, metadata, L,
   loading_prior_correlation,
   auxiliary_traits = NULL,
+  ard_precision = NULL,
+  ard_prior_shape = 1, ard_prior_rate = 1,
+  loading = NULL, method = "random",
   perform_checks = TRUE
 ){
   metadata <- specify_manifest_trait_metadata(
@@ -37,7 +41,7 @@ initialise_plvm <- function(
   N <- nrow(manifest_trait_df)
   D <- sum(sapply(metadata$manifest_trait_index, length))
   D_prime <- sum(sapply(metadata$auxiliary_trait_index, length))
-
+  # Auxiliary Traits
   X <- initialise_auxiliary_traits(
     n_traits = nrow(metadata),
     manifest_trait_df = manifest_trait_df,
@@ -50,9 +54,28 @@ initialise_plvm <- function(
     auxiliary_traits = auxiliary_traits,
     perform_checks = perform_checks
   )
+  # Loading
+  alpha <- initialise_loading_ard_precision(
+    L = L,
+    ard_prior_shape = ard_prior_shape, ard_prior_rate = ard_prior_rate,
+    ard_precision = ard_precision,
+    perform_checks = perform_checks
+  )
+  W <- initialise_loading(
+    D_prime = D_prime, L = L,
+    ard_precision = alpha,
+    loading_prior_correlation = loading_prior_correlation,
+    loading = loading, method = method,
+    auxiliary_traits = X,
+    perform_checks = perform_checks
+  )
 
   out <- list(
-    auxiliary_traits = X
+    auxiliary_traits = X,
+    ard_prior_shape = ard_prior_shape, ard_prior_rate = ard_prior_rate,
+    ard_precision = alpha,
+    loading_prior_correlation = loading_prior_correlation,
+    loading = W
   )
   out
 }

@@ -262,3 +262,48 @@ initialise_auxiliary_traits <- function(
   }
   auxiliary_traits
 }
+
+#' Initialise Precision
+#'
+#' Initialise the precision parameters on auxiliary traits within the PLVM.
+#'
+#' @inheritParams specify_manifest_trait_metadata
+#' @param precision_prior_shape A positive real-valued scalar. The shape of the
+#'   Gamma prior on the precision.
+#' @param precision_prior_rate A positive real-valued scalar. The rate of the
+#'   Gamma prior on the precision.
+#' @param precision A vector length \eqn{n_traits} taking positive real values.
+#'   The Precision with which auxiliary traits are observed. Precision
+#'   parameters for discrete traits are fixed at 1. When non-null checks that
+#'   the precision parameters have been specified correctly.
+#'
+#' @return A vector length \eqn{n_traits} taking positive real values. The
+#'   Precision with which auxiliary traits are observed. Precision parameters
+#'   for discrete traits are fixed at 1.
+initialise_precision <- function(
+  n_traits, trait_names, trait_type,
+  precision_prior_shape = 1, precision_prior_rate = 0.01,
+  precision = NULL,
+  perform_checks = TRUE
+){
+  if (perform_checks) {
+    checkmate::assert_number(precision_prior_shape, lower = 0)
+    checkmate::assert_number(precision_prior_rate, lower = 0)
+    checkmate::assert_numeric(
+      precision, lower = 0, any.missing = FALSE, null.ok = TRUE,
+      names = "named"
+      )
+    checkmate::assert_numeric(
+      precision[trait_type %in% c("ord", "nom")], lower = 1, upper = 1,
+      any.missing = FALSE, null.ok = TRUE,
+      names = "named"
+    )
+  }
+  if (!is.null(precision)) return(precision)
+  precision <- rep(1, n_traits)
+  precision[trait_type %in% c("con", "fvt")] <- stats::rgamma(
+    sum(trait_type %in% c("con", "fvt")), shape = precision_prior_shape, rate = precision_prior_rate
+    )
+ names(precision) <- trait_names
+ precision
+}

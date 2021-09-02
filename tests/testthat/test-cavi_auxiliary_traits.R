@@ -280,3 +280,48 @@ test_that("initialise auxiliary traits", {
     X
   )
 })
+
+test_that("Auxiliary Precision Initialised", {
+  P <- 4
+  tn <- c("ord", "nom", "con", "fvt")
+  tt <- factor(tn, levels = c("ord", "nom", "con", "fvt"))
+
+  lambda <- c(1, 1, rgamma(2, shape = 1, rate = 0.01))
+  names(lambda) <- tn
+
+  prec <- initialise_precision(
+    n_traits = P, trait_names = tn,  trait_type = tt,
+    precision_prior_shape = 1, precision_prior_rate = 0.01,
+    precision = NULL,
+    perform_checks = TRUE
+  )
+  expect_equal(
+    names(prec),
+    tn
+  )
+  expect_equal(
+    prec[tt %in% c("ord", "nom")],
+    rep(1, sum(tt %in% c("ord", "nom"))),
+    ignore_attr = TRUE
+  )
+
+  expect_equal(
+    lambda,
+    initialise_precision(
+      n_traits = P, trait_names = tn,  trait_type = tt,
+      precision_prior_shape = 1, precision_prior_rate = 0.01,
+      precision = lambda,
+      perform_checks = TRUE
+    )
+  )
+
+  lambda["ord"] <- 1.1
+  expect_error(
+    initialise_precision(
+      n_traits = P, trait_names = tn,  trait_type = tt,
+      precision_prior_shape = 1, precision_prior_rate = 0.01,
+      precision = lambda,
+      perform_checks = TRUE
+    )
+  )
+})
