@@ -7,7 +7,7 @@
 compute_individual_specific_latent_trait_precision(
   precision_vector,
   loading_outer_product_expectation,
-  within_taxon_standard_deviation,
+  within_taxon_amplitude,
   perform_checks = TRUE
 )
 }
@@ -20,7 +20,7 @@ auxiliary traits.}
 real values. The expected outer product of the loading under the
 approximate posterior distribution.}
 
-\item{within_taxon_standard_deviation}{An L-dimensional vector of real values
+\item{within_taxon_amplitude}{An L-dimensional vector of real values
 on the interval \eqn{[0, 1]}. The within-taxon variation parameters for
 each of the L latent traits.}
 

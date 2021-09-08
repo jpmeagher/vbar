@@ -6,8 +6,8 @@
 \usage{
 initialise_loading_ard_precision(
   L,
-  ard_prior_shape = 1,
-  ard_prior_rate = 1,
+  ard_shape = 1,
+  ard_rate = 1,
   ard_precision = NULL,
   perform_checks = TRUE
 )
@@ -15,11 +15,11 @@ initialise_loading_ard_precision(
 \arguments{
 \item{L}{An integer. The dimension of latent traits.}
 
-\item{ard_prior_shape}{A positive real-valued scalar. The shape of the Gamma
-prior on the ARD precision hyper-parameters}
+\item{ard_shape}{A positive real-valued scalar. The shape of the Gamma
+distribution generating initial ARD precision hyper-parameters}
 
-\item{ard_prior_rate}{A positive real-valued scalar. The rate of the Gamma
-prior on the ARD precision hyper-parameters}
+\item{ard_rate}{A positive real-valued scalar. The rate of the Gamma
+distribution generating initial ARD precision hyper-parameters}
 
 \item{ard_precision}{An L-dimensional vector of real numbers. The initial ARD
 precision hyper-parameters on the loadings. When non-null checks that

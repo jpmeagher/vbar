@@ -16,13 +16,16 @@ reparameterise_phylogenetic_ou(
 \item{phy}{An object of class "\eqn{phylo}".}
 
 \item{heritable_amplitude}{A positive real-valued scalar. The amplitude of
-the phylogenetic OU process.}
+the phylogenetic OU process. Note that this is the square root of the
+variance and so should be thought of as a standard deviation parameter.}
 
 \item{length_scale}{A positive real number. The length-scale of the
 Ornstein-Uhlenbeck process.}
 
 \item{environmental_amplitude}{A positive real-valued scalar. The amplitude
-of non-phylogenetic variation in the traits of extant taxa.}
+of non-phylogenetic variation in the traits of extant taxa. N Note that
+this is the square root of the variance and so should be thought of as a
+standard deviation parameter.}
 
 \item{perform_checks}{Logical. Check if function inputs are specified
 correctly.}

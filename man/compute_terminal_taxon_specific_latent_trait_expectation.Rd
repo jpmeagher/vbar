@@ -6,7 +6,7 @@
 \usage{
 compute_terminal_taxon_specific_latent_trait_expectation(
   individual_specific_latent_traits,
-  within_taxon_standard_deviation,
+  within_taxon_amplitude,
   parent_taxon_latent_trait,
   conditional_expectation_weight,
   conditional_standard_deviation,
@@ -19,7 +19,7 @@ compute_terminal_taxon_specific_latent_trait_expectation(
 values. The latent trait values associated with individuals within the
 taxon.}
 
-\item{within_taxon_standard_deviation}{An L-dimensional vector of real values
+\item{within_taxon_amplitude}{An L-dimensional vector of real values
 on the interval \eqn{[0, 1]}. The within-taxon variation parameters for
 each of the L latent traits.}
 

@@ -8,6 +8,7 @@
 #' @inheritParams initialise_loading_ard_precision
 #' @inheritParams initialise_precision
 #' @inheritParams reparameterise_phylogenetic_ou
+#' @inheritParams compute_individual_specific_latent_trait_precision
 #' @param metadata A data frame. Contains all the metadata required to map a set
 #'   of manifest traits to the PLVM auxiliary traits..
 #' @param id_label Either a string or numeric indexing the variable in
@@ -29,7 +30,7 @@ initialise_plvm <- function(
   loading = NULL, method = "random",
   within_taxon_amplitude = NULL,
   heritable_amplitude = NULL,
-  phylogenetic_length_scale = 2,
+  length_scale = 2,
   perform_checks = TRUE
 ){
   # Check Metadata and manifest traits
@@ -131,7 +132,7 @@ initialise_plvm <- function(
       reparameterise_phylogenetic_ou(
         phy = phy,
         heritable_amplitude = heritable_amplitude[i],
-        length_scale = phylogenetic_length_scale,
+        length_scale = length_scale,
         environmental_amplitude = sqrt(1 - heritable_amplitude[i]^2),
         perform_checks = perform_checks
       )
@@ -150,7 +151,7 @@ initialise_plvm <- function(
       compute_individual_specific_latent_trait_expectation(
         auxiliary_trait = X[i, ],
         loading = W,
-        taxon_specific_latent_trait = rnorm(L, sd = heritable_amplitude),
+        taxon_specific_latent_trait = stats::rnorm(L, sd = heritable_amplitude),
         precision_vector = lambda_vector,
         individual_specific_latent_trait_precision = lambda_Z,
         within_taxon_amplitude = within_taxon_amplitude,
@@ -171,15 +172,15 @@ initialise_plvm <- function(
   # Terminal nodes
   for (i in 1:S) {
     lambda_F[i, ] <- compute_terminal_taxon_specific_latent_trait_precision(
-      N_s = sum(manifest_trait_df[, id_label] == ph$tip.label[i]),
+      N_s = sum(manifest_trait_df[, id_label] == phy$tip.label[i]),
       within_taxon_amplitude = within_taxon_amplitude,
       conditional_standard_deviation = phylogenetic_GP[i, "sd", ],
       perform_checks = perform_checks
     )
     f[i, ] <- compute_terminal_taxon_specific_latent_trait_expectation(
-      individual_specific_latent_traits = Z[manifest_trait_df[, id_label] == ph$tip.label[i], ],
+      individual_specific_latent_traits = Z[manifest_trait_df[, id_label] == phy$tip.label[i], ],
       within_taxon_amplitude = within_taxon_amplitude,
-      parent_taxon_latent_trait = rnorm(L, sd = heritable_amplitude),
+      parent_taxon_latent_trait = stats::rnorm(L, sd = heritable_amplitude),
       conditional_expectation_weight = phylogenetic_GP[i, "weight", ],
       conditional_standard_deviation = phylogenetic_GP[i, "sd", ],
       latent_trait_precision = lambda_F[i, ],
@@ -198,7 +199,7 @@ initialise_plvm <- function(
       child_taxa_latent_traits = f[ch, ],
       child_taxa_conditional_expectation_weights = phylogenetic_GP[ch, "weight", ],
       child_taxa_conditional_standard_deviations = phylogenetic_GP[ch, "sd", ],
-      parent_taxon_latent_trait = rnorm(L, sd = heritable_amplitude),
+      parent_taxon_latent_trait = stats::rnorm(L, sd = heritable_amplitude),
       conditional_expectation_weight = phylogenetic_GP[i, "weight", ],
       conditional_standard_deviation = phylogenetic_GP[i, "sd", ],
       latent_trait_precision = lambda_F[i, ],
@@ -223,7 +224,7 @@ initialise_plvm <- function(
     individual_specific_latent_trait_expectation = Z,
     individual_specific_latent_trait_outer_product_expectation = outer_Z_list,
     heritable_amplitude = heritable_amplitude,
-    phylogenetic_length_scale = phylogenetic_length_scale,
+    length_scale = length_scale,
     phylogenetic_GP = phylogenetic_GP,
     taxon_specific_latent_trait_precision = lambda_F,
     taxon_specific_latent_trait_expectation = f

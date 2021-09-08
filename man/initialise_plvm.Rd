@@ -8,16 +8,21 @@ initialise_plvm(
   manifest_trait_df,
   metadata,
   L,
+  phy,
+  id_label = "taxon_id",
   loading_prior_correlation,
   auxiliary_traits = NULL,
-  ard_precision = NULL,
-  ard_prior_shape = 1,
-  ard_prior_rate = 1,
-  loading = NULL,
-  method = "random",
   precision_prior_shape = 1,
   precision_prior_rate = 0.01,
   precision = NULL,
+  ard_precision = NULL,
+  ard_shape = 1,
+  ard_rate = 1,
+  loading = NULL,
+  method = "random",
+  within_taxon_amplitude = NULL,
+  heritable_amplitude = NULL,
+  length_scale = 2,
   perform_checks = TRUE
 )
 }
@@ -31,27 +36,18 @@ of manifest traits to the PLVM auxiliary traits..}
 
 \item{L}{An integer. The dimension of latent traits.}
 
+\item{phy}{An object of class "\eqn{phylo}".}
+
+\item{id_label}{Either a string or numeric indexing the variable in
+\eqn{manifest_trait_df} identifying the taxon to which each observation
+belongs.}
+
 \item{loading_prior_correlation}{A D'xD' correlation matrix. The correlation
 within loadings under the Gaussian prior.}
 
 \item{auxiliary_traits}{An NxD' matrix of real numbers. The initial matrix of
 auxiliary traits. When non null checks that the auxiliary trait matrix is
 of the correct type and size.}
-
-\item{ard_precision}{An L-dimensional vector of real numbers. The initial ARD
-precision hyper-parameters on the loadings.}
-
-\item{ard_prior_shape}{A positive real-valued scalar. The shape of the Gamma
-prior on the ARD precision hyper-parameters}
-
-\item{ard_prior_rate}{A positive real-valued scalar. The rate of the Gamma
-prior on the ARD precision hyper-parameters}
-
-\item{loading}{A D'xL matrix of real values. The initial loading matrix. When
-non null checks that the loading matrix is of the correct type and size.}
-
-\item{method}{A string. Either \eqn{"random"} or \eqn{"pca"} indicating the
-type of initialisation adopted.}
 
 \item{precision_prior_shape}{A positive real-valued scalar. The shape of the
 Gamma prior on the precision.}
@@ -63,6 +59,32 @@ Gamma prior on the precision.}
 The Precision with which auxiliary traits are observed. Precision
 parameters for discrete traits are fixed at 1. When non-null checks that
 the precision parameters have been specified correctly.}
+
+\item{ard_precision}{An L-dimensional vector of real numbers. The initial ARD
+precision hyper-parameters on the loadings.}
+
+\item{ard_shape}{A positive real-valued scalar. The shape of the Gamma
+distribution generating initial ARD precision hyper-parameters}
+
+\item{ard_rate}{A positive real-valued scalar. The rate of the Gamma
+distribution generating initial ARD precision hyper-parameters}
+
+\item{loading}{A D'xL matrix of real values. The initial loading matrix. When
+non null checks that the loading matrix is of the correct type and size.}
+
+\item{method}{A string. Either \eqn{"random"} or \eqn{"pca"} indicating the
+type of initialisation adopted.}
+
+\item{within_taxon_amplitude}{An L-dimensional vector of real values
+on the interval \eqn{[0, 1]}. The within-taxon variation parameters for
+each of the L latent traits.}
+
+\item{heritable_amplitude}{A positive real-valued scalar. The amplitude of
+the phylogenetic OU process. Note that this is the square root of the
+variance and so should be thought of as a standard deviation parameter.}
+
+\item{length_scale}{A positive real number. The length-scale of the
+Ornstein-Uhlenbeck process.}
 
 \item{perform_checks}{Logical. Check if function inputs are specified
 correctly.}

@@ -76,7 +76,7 @@ test_that("plvm initialised for cavi", {
     loading = NULL, method = "random",
     within_taxon_amplitude = NULL,
     heritable_amplitude = NULL,
-    phylogenetic_length_scale = 2,
+    length_scale = 2,
     perform_checks = TRUE
   )
 
@@ -98,7 +98,7 @@ test_that("plvm initialised for cavi", {
   expect_equal(
     X,
     initialise_plvm(
-      manifest_trait_df = mt, metadata = meta,
+      manifest_trait_df = mt, metadata = meta, phy = ph,
       L = L,
       loading_prior_correlation = diag(D_p),
       auxiliary_traits = X,
@@ -119,7 +119,7 @@ test_that("plvm initialised for cavi", {
   expect_equal(
     alpha,
     initialise_plvm(
-      manifest_trait_df = mt, metadata = meta,
+      manifest_trait_df = mt, metadata = meta, phy = ph,
       L = L,
       loading_prior_correlation = C_w,
       auxiliary_traits = NULL,
@@ -133,7 +133,7 @@ test_that("plvm initialised for cavi", {
   expect_equal(
     W,
     initialise_plvm(
-      manifest_trait_df = mt, metadata = meta,
+      manifest_trait_df = mt, metadata = meta, phy = ph,
       L = L,
       loading_prior_correlation = C_w,
       auxiliary_traits = NULL,
@@ -154,7 +154,7 @@ test_that("plvm initialised for cavi", {
   expect_equal(
     lambda,
     initialise_plvm(
-      manifest_trait_df = mt, metadata = meta,
+      manifest_trait_df = mt, metadata = meta, phy = ph,
       L = L,
       loading_prior_correlation = C_w,
       auxiliary_traits = NULL,
@@ -230,26 +230,6 @@ test_that("plvm initialised for cavi", {
     plvm$taxon_specific_latent_trait_expectation,
     nrows = S + ph$Nnode, ncols = L, any.missing = FALSE,
     mode = "numeric"
-  )
-
-  expect_equal(
-    "terminal taxon level traits", TRUE
-  )
-
-  plvm <- initialise_plvm(
-    manifest_trait_df = mt, metadata = meta, phy = ph,
-    L = L,
-    loading_prior_correlation = C_w,
-    auxiliary_traits = NULL,
-    precision_prior_shape = 1, precision_prior_rate = 0.01,
-    precision = NULL,
-    ard_precision = NULL,
-    ard_shape = 1, ard_rate = 1,
-    loading = NULL, method = "random",
-    within_taxon_amplitude = NULL,
-    heritable_amplitude = NULL,
-    phylogenetic_length_scale = 2,
-    perform_checks = TRUE
   )
 
 })

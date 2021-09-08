@@ -5,16 +5,16 @@
 \title{Compute Terminal Taxon-specific Latent Trait Precision}
 \usage{
 compute_terminal_taxon_specific_latent_trait_precision(
-  N,
-  within_taxon_standard_deviation,
+  N_s,
+  within_taxon_amplitude,
   conditional_standard_deviation,
   perform_checks = TRUE
 )
 }
 \arguments{
-\item{N}{A natural number. The number of individuals witin the taxon.}
+\item{N_s}{A natural number. The number of individuals within the taxon.}
 
-\item{within_taxon_standard_deviation}{An L-dimensional vector of real values
+\item{within_taxon_amplitude}{An L-dimensional vector of real values
 on the interval \eqn{[0, 1]}. The within-taxon variation parameters for
 each of the L latent traits.}
 
