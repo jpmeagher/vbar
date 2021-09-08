@@ -61,16 +61,22 @@ test_that("plvm initialised for cavi", {
   ell <- 1 / (2 * pi)
   C_w[ind_at[[4]], ind_at[[4]]] <-  (exp_quad_kernel(d, 1, ell) + (1e-6 * diag(length(ind_at[[4]])))) / (1 + 1e-6)
 
+  ph <- vbar::synthetic_trait_model_specification$phylogeny
+  S <- length(ph$tip.label)
+
   plvm <- initialise_plvm(
-    manifest_trait_df = mt, metadata = meta,
+    manifest_trait_df = mt, metadata = meta, phy = ph,
     L = L,
     loading_prior_correlation = C_w,
     auxiliary_traits = NULL,
-    ard_precision = NULL,
-    ard_prior_shape = 1, ard_prior_rate = 1,
-    loading = NULL, method = "random",
     precision_prior_shape = 1, precision_prior_rate = 0.01,
     precision = NULL,
+    ard_precision = NULL,
+    ard_shape = 1, ard_rate = 1,
+    loading = NULL, method = "random",
+    within_taxon_amplitude = NULL,
+    heritable_amplitude = NULL,
+    phylogenetic_length_scale = 2,
     perform_checks = TRUE
   )
 
@@ -118,7 +124,7 @@ test_that("plvm initialised for cavi", {
       loading_prior_correlation = C_w,
       auxiliary_traits = NULL,
       ard_precision = alpha,
-      ard_prior_shape = 1, ard_prior_rate = 1,
+      ard_shape = 1, ard_rate = 1,
       loading = NULL, method = "random",
       perform_checks = TRUE
     )$ard_precision
@@ -132,10 +138,10 @@ test_that("plvm initialised for cavi", {
       loading_prior_correlation = C_w,
       auxiliary_traits = NULL,
       ard_precision = NULL,
-      ard_prior_shape = 1, ard_prior_rate = 1,
+      ard_shape = 1, ard_rate = 1,
       loading = W, method = "random",
       perform_checks = TRUE
-    )$loading
+    )$loading_expectation
   )
 
   lambda <- initialise_precision(
@@ -153,7 +159,7 @@ test_that("plvm initialised for cavi", {
       loading_prior_correlation = C_w,
       auxiliary_traits = NULL,
       ard_precision = NULL,
-      ard_prior_shape = 1, ard_prior_rate = 1,
+      ard_shape = 1, ard_rate = 1,
       loading = NULL, method = "random",
       precision_prior_shape = 1, precision_prior_rate = 0.01,
       precision = lambda,
@@ -161,5 +167,89 @@ test_that("plvm initialised for cavi", {
     )$precision
   )
 
+  checkmate::expect_matrix(
+    plvm$auxiliary_traits, mode = "numeric", nrows = N, ncols = D_p
+    )
+  checkmate::expect_numeric(
+    plvm$precision, len = P, lower = 0, any.missing = FALSE
+  )
+  checkmate::expect_number(
+    plvm$precision_prior_shape, lower = 0
+  )
+  checkmate::expect_number(
+    plvm$precision_prior_rate, lower = 0
+  )
+  checkmate::expect_numeric(
+    plvm$ard_precision, len = L, lower = 0, any.missing = FALSE
+  )
+  checkmate::expect_numeric(
+    plvm$scaled_conditional_loading_row_variance_vector,
+    len = D_p, lower = 0, any.missing = FALSE
+  )
+  checkmate::expect_matrix(
+    plvm$loading_prior_correlation, mode = "numeric", nrows = D_p, ncols = D_p
+  )
+  checkmate::expect_matrix(
+    plvm$loading_expectation, mode = "numeric", nrows = D_p, ncols = L
+  )
+  checkmate::expect_list(
+    plvm$loading_row_outer_product_expectation, len = D_p
+  )
+  checkmate::expect_list(
+    plvm$loading_row_precision_list, len = D_p
+  )
+  checkmate::expect_numeric(
+    plvm$within_taxon_amplitude,
+    len = L, lower = 0, any.missing = FALSE
+  )
+  checkmate::expect_matrix(
+    plvm$individual_specific_latent_trait_precision, mode = "numeric", nrows = L, ncols = L
+  )
+  checkmate::expect_matrix(
+    plvm$individual_specific_latent_trait_expectation, mode = "numeric", nrows = N, ncols = L
+  )
+  checkmate::expect_list(
+    plvm$individual_specific_latent_trait_outer_product_expectation, len = N
+  )
+  checkmate::expect_array(
+    plvm$phylogenetic_GP, mode = "numeric", any.missing = FALSE, d = 3
+  )
+  checkmate::expect_set_equal(
+    dim(plvm$phylogenetic_GP), c(length(ph$tip.label) + ph$Nnode, 2, L)
+  )
+  expect_equal(
+    plvm$phylogenetic_GP[S + 1, "sd", ],
+    plvm$heritable_amplitude
+  )
+  checkmate::expect_matrix(
+    plvm$taxon_specific_latent_trait_precision,
+    nrows = S + ph$Nnode, ncols = L, any.missing = FALSE,
+    mode = "numeric"
+  )
+  checkmate::expect_matrix(
+    plvm$taxon_specific_latent_trait_expectation,
+    nrows = S + ph$Nnode, ncols = L, any.missing = FALSE,
+    mode = "numeric"
+  )
+
+  expect_equal(
+    "terminal taxon level traits", TRUE
+  )
+
+  plvm <- initialise_plvm(
+    manifest_trait_df = mt, metadata = meta, phy = ph,
+    L = L,
+    loading_prior_correlation = C_w,
+    auxiliary_traits = NULL,
+    precision_prior_shape = 1, precision_prior_rate = 0.01,
+    precision = NULL,
+    ard_precision = NULL,
+    ard_shape = 1, ard_rate = 1,
+    loading = NULL, method = "random",
+    within_taxon_amplitude = NULL,
+    heritable_amplitude = NULL,
+    phylogenetic_length_scale = 2,
+    perform_checks = TRUE
+  )
 
 })

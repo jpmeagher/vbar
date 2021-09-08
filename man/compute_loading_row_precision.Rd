@@ -26,7 +26,7 @@ parameters for discrete traits are fixed at 1.}
 precision hyper-parameters on the loadings.}
 
 \item{scaled_conditional_row_variance}{A positive real-valued scalar. The
-variance of the loading in each row conditioned on the loading at every
+variance of the loading in the row conditioned on the loading at every
 other row before allowing for the ARD precision hyper-parameter.}
 
 \item{perform_checks}{Logical. Check if function inputs are specified

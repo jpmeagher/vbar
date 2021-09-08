@@ -13,9 +13,12 @@
 #'
 #' @param phy An object of class "\eqn{phylo}".
 #' @param heritable_amplitude A positive real-valued scalar. The amplitude of
-#'   the phylogenetic OU process.
+#'   the phylogenetic OU process. Note that this is the square root of the
+#'   variance and so should be thought of as a standard deviation parameter.
 #' @param environmental_amplitude A positive real-valued scalar. The amplitude
-#'   of non-phylogenetic variation in the traits of extant taxa.
+#'   of non-phylogenetic variation in the traits of extant taxa. N Note that
+#'   this is the square root of the variance and so should be thought of as a
+#'   standard deviation parameter.
 #' @inheritParams ou_kernel
 #' @param internal A logical value. Specifies whether to return the values at
 #'   internal nodes

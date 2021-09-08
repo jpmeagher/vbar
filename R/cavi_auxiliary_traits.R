@@ -317,7 +317,8 @@ initialise_precision <- function(
 #'   parameters for discrete traits are fixed at 1.
 #' @inheritParams specify_manifest_trait_metadata
 #'
-#' @return A D'-dimensional vector of positive real values. The precision along each dimension of the auxiliary traits.
+#' @return A D'-dimensional vector of positive real values. The precision along
+#'   each dimension of the auxiliary traits.
 map_precision_to_auxiliary_traits <- function(
   precision, auxiliary_trait_index,
   perform_checks = TRUE

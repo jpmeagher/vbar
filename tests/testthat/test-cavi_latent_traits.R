@@ -20,7 +20,7 @@ test_that("individual specific latent trait precision", {
     compute_individual_specific_latent_trait_precision(
       precision_vector = lambda,
       loading_outer_product_expectation = W_outer,
-      within_taxon_standard_deviation = tau,
+      within_taxon_amplitude = tau,
       perform_checks = TRUE
     ),
     tmp
@@ -39,7 +39,7 @@ test_that("individual specific latent trait expectation", {
   inv_S_z <- compute_individual_specific_latent_trait_precision(
     precision_vector = lambda,
     loading_outer_product_expectation = W_outer,
-    within_taxon_standard_deviation = tau,
+    within_taxon_amplitude = tau,
     perform_checks = TRUE
   )
 
@@ -60,7 +60,7 @@ test_that("individual specific latent trait expectation", {
       taxon_specific_latent_trait = f,
       precision_vector = lambda,
       individual_specific_latent_trait_precision = inv_S_z,
-      within_taxon_standard_deviation = tau,
+      within_taxon_amplitude = tau,
       perform_checks = TRUE
     ),
     c(tmp)
@@ -78,7 +78,7 @@ test_that("terminal taxon-specific latent trait precision", {
   expect_equal(
     compute_terminal_taxon_specific_latent_trait_precision(
       N = N,
-      within_taxon_standard_deviation = tau,
+      within_taxon_amplitude = tau,
       conditional_standard_deviation = eta
     ),
     tmp
@@ -101,7 +101,7 @@ test_that("terminal taxon-specific latent trait expectation", {
 
   inv_S_f <- compute_terminal_taxon_specific_latent_trait_precision(
     N = N,
-    within_taxon_standard_deviation = tau,
+    within_taxon_amplitude = tau,
     conditional_standard_deviation = eta
   )
   S_f <- 1 / inv_S_f
@@ -111,7 +111,7 @@ test_that("terminal taxon-specific latent trait expectation", {
   expect_equal(
     compute_terminal_taxon_specific_latent_trait_expectation(
       individual_specific_latent_traits = Z,
-      within_taxon_standard_deviation = tau,
+      within_taxon_amplitude = tau,
       parent_taxon_latent_trait = f_pa,
       conditional_expectation_weight = nu,
       conditional_standard_deviation = eta,

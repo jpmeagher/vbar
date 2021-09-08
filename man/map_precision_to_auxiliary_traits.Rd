@@ -24,7 +24,8 @@ Function-valued traits are multi-variate and indexed by a vector of values.}
 correctly.}
 }
 \value{
-A D'-dimensional vector of positive real values. The precision along each dimension of the auxiliary traits.
+A D'-dimensional vector of positive real values. The precision along
+  each dimension of the auxiliary traits.
 }
 \description{
 Create a vector of precision parameters corresponding to the puxiliary traits.

@@ -9,7 +9,7 @@
 #' @param loading_outer_product_expectation An \eqn{LxLxD} dimensional array of
 #'   real values. The expected outer product of the loading under the
 #'   approximate posterior distribution.
-#' @param within_taxon_standard_deviation An L-dimensional vector of real values
+#' @param within_taxon_amplitude An L-dimensional vector of real values
 #'   on the interval \eqn{[0, 1]}. The within-taxon variation parameters for
 #'   each of the L latent traits.
 #' @inheritParams ou_kernel
@@ -17,15 +17,14 @@
 #' @return A symmetric LxL matrix of real values. The precision matrix of the
 #'   individual-specific latent traits under the approximate posterior
 #'   distribution.
-#' @export
 compute_individual_specific_latent_trait_precision <- function(
   precision_vector,
   loading_outer_product_expectation,
-  within_taxon_standard_deviation,
+  within_taxon_amplitude,
   perform_checks = TRUE
 ){
   D <- length(precision_vector)
-  L <- length(within_taxon_standard_deviation)
+  L <- length(within_taxon_amplitude)
   if (perform_checks) {
     checkmate::assert_numeric(
       precision_vector, any.missing = FALSE
@@ -38,13 +37,13 @@ compute_individual_specific_latent_trait_precision <- function(
       all(dim(loading_outer_product_expectation) == c(L, L, D))
     )
     checkmate::assert_numeric(
-      within_taxon_standard_deviation, lower = 0, upper = 1, any.missing = FALSE
+      within_taxon_amplitude, lower = 0, upper = 1, any.missing = FALSE
     )
   }
   apply(
     sweep(loading_outer_product_expectation, 3, precision_vector, "*"),
     c(1, 2), sum
-    ) + diag(1 / within_taxon_standard_deviation^2)
+    ) + diag(1 / within_taxon_amplitude^2)
 }
 
 #' Compute Individual-specific Latent Trait Expectation
@@ -65,18 +64,17 @@ compute_individual_specific_latent_trait_precision <- function(
 #' @return An L-dimensional vector of real values. The expected value of the
 #'   individual-specific latent trait under the approximate posterior
 #'   distributiÒon
-#' @export
 compute_individual_specific_latent_trait_expectation <- function(
   auxiliary_trait,
   loading,
   taxon_specific_latent_trait,
   precision_vector,
   individual_specific_latent_trait_precision,
-  within_taxon_standard_deviation,
+  within_taxon_amplitude,
   perform_checks = TRUE
 ){
   D <- length(precision_vector)
-  L <- length(within_taxon_standard_deviation)
+  L <- length(within_taxon_amplitude)
   if (perform_checks) {
     checkmate::assert_numeric(
       auxiliary_trait, any.missing = FALSE, len = D
@@ -96,11 +94,11 @@ compute_individual_specific_latent_trait_expectation <- function(
       nrows = L, ncols = L, any.missing = FALSE
     )
     checkmate::assert_numeric(
-      within_taxon_standard_deviation, lower = 0, upper = 1, any.missing = FALSE
+      within_taxon_amplitude, lower = 0, upper = 1, any.missing = FALSE
     )
   }
   tmp <- t(loading) %*% diag(precision_vector) %*% auxiliary_trait +
-    diag(1 / within_taxon_standard_deviation^2) %*% taxon_specific_latent_trait
+    diag(1 / within_taxon_amplitude^2) %*% taxon_specific_latent_trait
   c(solve(
     individual_specific_latent_trait_precision,
     tmp
@@ -113,7 +111,7 @@ compute_individual_specific_latent_trait_expectation <- function(
 #' the phylogeny under the approximate posterior distribution for the PLVM.
 #'
 #'
-#' @param N A natural number. The number of individuals witin the taxon.
+#' @param N_s A natural number. The number of individuals within the taxon.
 #' @inheritParams  compute_individual_specific_latent_trait_precision
 #' @param conditional_standard_deviation An L-dimensional vector of real values
 #'   on the interval \eqn{[0, 1]}. The standard deviation of the taxon-specific
@@ -121,23 +119,22 @@ compute_individual_specific_latent_trait_expectation <- function(
 #'
 #' @return An L-dimensional vector of real values. Precision parameters for the
 #'   taxo-specific latent traits.
-#' @export
 compute_terminal_taxon_specific_latent_trait_precision <- function(
-  N,
-  within_taxon_standard_deviation,
+  N_s,
+  within_taxon_amplitude,
   conditional_standard_deviation,
   perform_checks = TRUE
 ){
-  L <- length(within_taxon_standard_deviation)
+  L <- length(within_taxon_amplitude)
   if (perform_checks) {
     checkmate::assert_numeric(
-      within_taxon_standard_deviation, lower = 0, upper = 1, any.missing = FALSE
+      within_taxon_amplitude, lower = 0, upper = 1, any.missing = FALSE
     )
     checkmate::assert_numeric(
       conditional_standard_deviation, lower = 0, upper = 1, any.missing = FALSE
     )
   }
-  N / within_taxon_standard_deviation^2 +
+  N_s / within_taxon_amplitude^2 +
     1 / conditional_standard_deviation^2
 }
 
@@ -160,24 +157,23 @@ compute_terminal_taxon_specific_latent_trait_precision <- function(
 #'   values. The precision of the taxon-specific latent trait.
 #'
 #' @return An L-dimensional vector of real values.
-#' @export
 compute_terminal_taxon_specific_latent_trait_expectation <- function(
   individual_specific_latent_traits,
-  within_taxon_standard_deviation,
+  within_taxon_amplitude,
   parent_taxon_latent_trait,
   conditional_expectation_weight,
   conditional_standard_deviation,
   latent_trait_precision,
   perform_checks = TRUE
 ){
-  L <- length(within_taxon_standard_deviation)
+  L <- length(within_taxon_amplitude)
   if (perform_checks) {
     checkmate::assert_matrix(
       individual_specific_latent_traits, mode = "numeric",
       any.missing = FALSE, ncols = L
     )
     checkmate::assert_numeric(
-      within_taxon_standard_deviation, lower = 0, upper = 1, any.missing = FALSE
+      within_taxon_amplitude, lower = 0, upper = 1, any.missing = FALSE
     )
     checkmate::assert_numeric(
       parent_taxon_latent_trait, any.missing = FALSE, len = L
@@ -192,7 +188,7 @@ compute_terminal_taxon_specific_latent_trait_expectation <- function(
       latent_trait_precision, any.missing = FALSE, len = L, lower = 0
     )
   }
-  tmp <- colSums(sweep(individual_specific_latent_traits, 2, within_taxon_standard_deviation^2, "/")) +
+  tmp <- colSums(sweep(individual_specific_latent_traits, 2, within_taxon_amplitude^2, "/")) +
     conditional_expectation_weight * parent_taxon_latent_trait / conditional_standard_deviation^2
   tmp / latent_trait_precision
 }
@@ -212,7 +208,6 @@ compute_terminal_taxon_specific_latent_trait_expectation <- function(
 #' @inheritParams compute_terminal_taxon_specific_latent_trait_precision
 #'
 #' @return An L-dimensional vector of positive real values.
-#' @export
 compute_internal_taxon_specific_latent_trait_precision <- function(
   child_taxa_conditional_expectation_weights,
   child_taxa_conditional_standard_deviations,
@@ -255,7 +250,6 @@ compute_internal_taxon_specific_latent_trait_precision <- function(
 #' @inheritParams compute_terminal_taxon_specific_latent_trait_expectation
 #'
 #' @return An L-dimensional vector of real values.
-#' @export
 compute_internal_taxon_specific_latent_trait_expectation <- function(
   child_taxa_latent_traits,
   child_taxa_conditional_expectation_weights,

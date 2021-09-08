@@ -66,10 +66,10 @@ initialise_loading <- function(
 #' Gaussian process prior on PLVM loadings.
 #'
 #' @inheritParams initialise_loading
-#' @param ard_prior_shape A positive real-valued scalar. The shape of the Gamma
-#'   prior on the ARD precision hyper-parameters
-#' @param ard_prior_rate A positive real-valued scalar. The rate of the Gamma
-#'   prior on the ARD precision hyper-parameters
+#' @param  ard_shape A positive real-valued scalar. The shape of the Gamma
+#'   distribution generating initial ARD precision hyper-parameters
+#' @param  ard_rate A positive real-valued scalar. The rate of the Gamma
+#'   distribution generating initial ARD precision hyper-parameters
 #' @param ard_precision An L-dimensional vector of real numbers. The initial ARD
 #'   precision hyper-parameters on the loadings. When non-null checks that
 #'   \eqn{ard_precision} is of the correct type and size.
@@ -78,21 +78,21 @@ initialise_loading <- function(
 #'   hyper-parameters on the loadings
 initialise_loading_ard_precision <- function(
   L,
-  ard_prior_shape = 1, ard_prior_rate = 1,
+   ard_shape = 1,  ard_rate = 1,
   ard_precision = NULL,
   perform_checks = TRUE
 ){
   if (perform_checks) {
     checkmate::assert_count(L, positive = TRUE)
-    checkmate::assert_number(ard_prior_shape, lower = 0)
-    checkmate::assert_number(ard_prior_rate, lower = 0)
+    checkmate::assert_number( ard_shape, lower = 0)
+    checkmate::assert_number( ard_rate, lower = 0)
     checkmate::assert_numeric(
       ard_precision, lower = 0, len = L, any.missing = FALSE,
       null.ok = TRUE
     )
   }
   if (is.null(ard_precision)) {
-    ard_precision <- stats::rgamma(L, shape = ard_prior_shape, rate = ard_prior_rate)
+    ard_precision <- stats::rgamma(L, shape =  ard_shape, rate =  ard_rate)
   }
   ard_precision
 }
@@ -106,7 +106,7 @@ initialise_loading_ard_precision <- function(
 #'
 #' @return A D'-dimensional vector of positive real numbers. The scaled
 #'   conditional variance of each row in the loading matrix.
-compute_scaled_conditional_row_variance <- function(
+compute_scaled_conditional_row_variance_vector <- function(
   loading_prior_correlation,
   perform_checks = TRUE
 ){
@@ -135,7 +135,7 @@ compute_scaled_conditional_row_variance <- function(
 #'   the individual specific latent traits under the approximate posterior
 #'   within CAVI for the PLVM.
 #' @param scaled_conditional_row_variance A positive real-valued scalar. The
-#'   variance of the loading in each row conditioned on the loading at every
+#'   variance of the loading in the row conditioned on the loading at every
 #'   other row before allowing for the ARD precision hyper-parameter.
 #'
 #' @return An LxL matrix of real values. The precision associated with a row of
@@ -166,5 +166,65 @@ compute_loading_row_precision <- function(
     )
   }
   (precision * ZTZ) + (diag(ard_precision) / c_star)
+}
+
+
+#' Compute precision for each row of the Loading Matrix
+#'
+#' Computes the Gaussian precision associated with each row of the loading
+#' matrix under the approximate posterior within Coordinate Ascent Variational
+#' Inference (CAVI) for a Phylogenetic Latent Variable Model (PLVM). Stores the
+#' resulting D' precision matrices as a list.
+#'
+#' @inheritParams compute_loading_row_precision
+#' @param precision_vector A D'-dimensional vector of positive real values. The
+#'   precision along each dimension of the auxiliary traits.
+#' @param scaled_conditional_row_variance_vector A D'-dimensional vector of
+#'   positive real values. The variance of the loading in each row conditioned
+#'   on the loading at every other row before allowing for the ARD precision
+#'   hyper-parameter.
+#'
+#' @return A list of length D' containing LxL matrices of real values. The
+#'   precision associated with each row of the loading matrix under the
+#'   approximate distribution within CAVI for a PLVM.
+compute_loading_row_precision_list <- function(
+  total_individual_specific_latent_trait_outer_product_expectation,
+  precision_vector,
+  ard_precision,
+  scaled_conditional_row_variance_vector,
+  perform_checks = TRUE
+){
+  D_prime <- length(precision_vector)
+  ZTZ <- total_individual_specific_latent_trait_outer_product_expectation
+  c_star <- scaled_conditional_row_variance_vector
+  L <- length(ard_precision)
+  if (perform_checks) {
+    checkmate::assert_matrix(
+      total_individual_specific_latent_trait_outer_product_expectation,
+      any.missing = FALSE, nrows = L, ncols = L
+    )
+    checkmate::assert_numeric(
+      precision_vector, lower = 0, finite = TRUE, any.missing = FALSE,
+    )
+    checkmate::assert_numeric(
+      ard_precision, any.missing = FALSE, lower = 0, finite = TRUE
+    )
+    checkmate::assert_numeric(
+      scaled_conditional_row_variance_vector, lower = 0, finite = TRUE,
+      len = D_prime, any.missing = FALSE
+    )
+  }
+  lapply(
+    1:D_prime,
+    function(i){
+      compute_loading_row_precision(
+        total_individual_specific_latent_trait_outer_product_expectation = ZTZ,
+        precision = precision_vector[i],
+        ard_precision = ard_precision,
+        scaled_conditional_row_variance = c_star[i],
+        perform_checks = FALSE
+      )
+    }
+  )
 }
 
