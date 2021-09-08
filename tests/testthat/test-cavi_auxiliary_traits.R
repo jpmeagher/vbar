@@ -115,6 +115,46 @@ test_that("nominal trait normalising constant", {
   )
 })
 
+test_that("ordinal trait normalisisng constant", {
+  gamma <- c(-Inf, 0, sort(runif(2)), Inf)
+  K <- length(gamma - 1)
+  N <- 100
+  mu <- rnorm(N, sd = 0.25)
+  X <- rnorm(N, mean  = mu)
+  y <- sapply(X, function(x) sum(x > gamma))
+  expect_true(
+    all(X > gamma[y] & X < gamma[y+1])
+  )
+  Z <- pnorm(gamma[y+1], mean = mu ) - pnorm(gamma[y], mean = mu)
+
+  y_fac <- factor(y, ordered = TRUE)
+  expect_equal(
+    ordinal_probit_normalising_constant(
+      y = y_fac, mu = mu, cut_off_points = gamma,
+      perform_checks = TRUE
+    ),
+    Z
+  )
+
+  y_fac <- factor(y - 2, ordered = TRUE)
+  expect_equal(
+    ordinal_probit_normalising_constant(
+      y = y_fac, mu = mu, cut_off_points = gamma,
+      perform_checks = TRUE
+    ),
+    Z
+  )
+
+  checkmate::expect_numeric(
+    ordinal_probit_normalising_constant(
+      y = y_fac, mu = mu, cut_off_points = gamma,
+      perform_checks = TRUE
+    ),
+    lower = 0, upper = 1, any.missing = FALSE
+  )
+
+})
+
 test_that("auxiliary variavle expectation",{
   set.seed(101)
   n <- 1e2

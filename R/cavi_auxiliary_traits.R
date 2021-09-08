@@ -101,7 +101,7 @@ nominal_link <- function(
 #' multinomial belongs to category \eqn{i} under the probit model given the mean
 #' of the underlying Gaussian distribution with variance 1.
 #'
-#' @param i A positive integer. The index identifying the multinomial category..
+#' @param i A positive integer. The index identifying the multinomial category.
 #' @param mu A K-dimensional vector of real numbers. The expected value of the
 #'   auxiliary Gaussian mapping to the multinomial.
 #' @param n_samples A positive integer. The number of independent samples drawn
@@ -131,6 +131,40 @@ nominal_probit_normalising_constant <- function(
   mean(apply(
     stats::pnorm(z), 2, prod
   ))
+}
+
+#' Ordinal Probit Normalising Constant
+#'
+#' Computes the probability that ordinal variables belonging to one of K ordered
+#' categories each belong to category \eqn{i} under the probit model given the
+#' mean of the underlying Gaussian distribution with variance 1.
+#'
+#' @inheritParams ordinal_inverse_link
+#'
+#' @return  A vector of real numbers on the unit interval.
+ordinal_probit_normalising_constant <- function(
+  y, mu, cut_off_points,
+  perform_checks = TRUE
+){
+  N <- length(mu)
+  K <- length(cut_off_points) - 1
+  if (perform_checks) {
+    checkmate::assert_factor(
+      y, n.levels = K, ordered = TRUE, any.missing = FALSE
+    )
+    checkmate::assert_numeric(mu, len = N, any.missing = FALSE)
+    checkmate::assert_numeric(
+      cut_off_points, sorted = TRUE, any.missing = FALSE, min.len = 3
+    )
+    checkmate::assert_set_equal(
+      cut_off_points[1:2], c(-Inf, 0)
+    )
+    checkmate::assert_set_equal(
+      cut_off_points[K+1], Inf
+    )
+  }
+  i <- as.numeric(y)
+  stats::pnorm(cut_off_points[i+1] - mu) - stats::pnorm(cut_off_points[i] - mu)
 }
 
 #' Expectation of multinomial probit auxiliary variables

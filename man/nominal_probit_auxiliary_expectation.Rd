@@ -13,7 +13,7 @@ nominal_probit_auxiliary_expectation(
 )
 }
 \arguments{
-\item{i}{A positive integer. The index identifying the multinomial category..}
+\item{i}{A positive integer. The index identifying the multinomial category.}
 
 \item{mu}{A K-dimensional vector of real numbers. The expected value of the
 auxiliary Gaussian mapping to the multinomial.}
