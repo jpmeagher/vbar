@@ -15,7 +15,7 @@ test_that("ordinal link function", {
   )
 })
 
-test_that("ordianl inverse link", {
+test_that("ordinal inverse link", {
   N <- 100
   gamma <- c(-Inf, 0, 0.5, 1, Inf)
   x <- rnorm(N)
@@ -125,12 +125,13 @@ test_that("ordinal trait normalisisng constant", {
   expect_true(
     all(X > gamma[y] & X < gamma[y+1])
   )
-  Z <- pnorm(gamma[y+1], mean = mu ) - pnorm(gamma[y], mean = mu)
+  Z <- pnorm(gamma[y+1], mean = mu) - pnorm(gamma[y], mean = mu)
 
   y_fac <- factor(y, ordered = TRUE)
   expect_equal(
     ordinal_probit_normalising_constant(
       y = y_fac, mu = mu, cut_off_points = gamma,
+      log_out = FALSE,
       perform_checks = TRUE
     ),
     Z
@@ -138,18 +139,18 @@ test_that("ordinal trait normalisisng constant", {
 
   y_fac <- factor(y - 2, ordered = TRUE)
   expect_equal(
-    ordinal_probit_normalising_constant(
+    exp(ordinal_probit_normalising_constant(
       y = y_fac, mu = mu, cut_off_points = gamma,
       perform_checks = TRUE
-    ),
+    )),
     Z
   )
 
   checkmate::expect_numeric(
-    ordinal_probit_normalising_constant(
+    exp(ordinal_probit_normalising_constant(
       y = y_fac, mu = mu, cut_off_points = gamma,
       perform_checks = TRUE
-    ),
+    )),
     lower = 0, upper = 1, any.missing = FALSE
   )
 
@@ -393,4 +394,43 @@ test_that("precision maps to vector", {
       ignore_attr = TRUE
     )
   }
+})
+
+test_that("Ordinal auxiliary trait elbo computed", {
+  N <- 100
+  L <- 4
+  w <- rnorm(L)
+  Z <- matrix(rnorm(L*N), N, L)
+  w_outer <- (w %*% t(w)) + diag(runif(L))
+  Z_outer <- lapply(
+    1:N, function(i){
+      (Z[i, ] %*% t(Z[i, ])) + diag(runif(L))
+    }) %>%
+    simplify2array()
+
+  gamma <- c(-Inf, 0, sort(runif(2)), Inf)
+  K <- length(gamma - 1)
+  X <- rnorm(N, mean = Z %*% w)
+  y <- sapply(X, function(x) sum(x > gamma))
+  expect_true(
+    all(X > gamma[y] & X < gamma[y+1])
+  )
+
+  log_Z <- sum(log(pnorm(gamma[y + 1], mean = Z %*% w) - pnorm(gamma[y], mean = Z %*% w)))
+  m_ex_2 <- sum((Z %*% w)^2)
+  m_2_ex <- sum(sapply(
+    1:N, function(i){
+      sum(diag(w_outer %*% Z_outer[, , i]))
+    }))
+
+  y_fac <- factor(y - 2, ordered = TRUE)
+  expect_equal(
+    compute_ordinal_auxiliary_trait_elbo(
+      y = y_fac, cut_off_points = gamma,
+      loading_expectation = w, latent_trait_expectation = Z,
+      loading_outer_expectation = w_outer, latent_trait_outer_expectation = Z_outer,
+      perform_checks = TRUE
+    ),
+    log_Z + (0.5 *(m_ex_2 - m_2_ex))
+  )
 })

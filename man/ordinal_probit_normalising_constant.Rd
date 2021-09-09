@@ -8,6 +8,7 @@ ordinal_probit_normalising_constant(
   y,
   mu,
   cut_off_points,
+  log_out = TRUE,
   perform_checks = TRUE
 )
 }
@@ -21,11 +22,13 @@ underlying Gaussian random variable with variance 1.}
 \item{cut_off_points}{A K+1 dimensional ordered vector of values. The cut off
 points separating auxiliary traits into ordinal state.}
 
+\item{log_out}{Logical. Should the log probability be returned.}
+
 \item{perform_checks}{Logical. Check if function inputs are specified
 correctly.}
 }
 \value{
-A vector of real numbers on the unit interval.
+A vector of (log) probabilities.
 }
 \description{
 Computes the probability that ordinal variables belonging to one of K ordered

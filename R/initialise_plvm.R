@@ -111,14 +111,17 @@ initialise_plvm <- function(
     scaled_conditional_row_variance_vector = c_star,
     perform_checks = perform_checks
   )
+  lambda_W <- simplify2array(lambda_W_list)
   outer_W_list <- lapply(
     1:D_prime,
     function(i){
       gaussian_outer_product_expectation(
-        expected_value = W[i, ], precision_matrix = lambda_W_list[[i]]
+        expected_value = W[i, ], precision_matrix = lambda_W_list[[i]],
+        perform_checks = perform_checks
       )
     }
   )
+  outer_W <- simplify2array(outer_W_list)
   # Phylogenetic GP
   if (is.null(within_taxon_amplitude)) within_taxon_amplitude <- stats::runif(L)
   if (is.null(heritable_amplitude)) heritable_amplitude <- stats::runif(L)
@@ -163,12 +166,15 @@ initialise_plvm <- function(
     1:N,
     function(i){
       gaussian_outer_product_expectation(
-        expected_value = Z[i, ], precision_matrix = lambda_Z
+        expected_value = Z[i, ], precision_matrix = lambda_Z,
+        perform_checks = perform_checks
       )
     }
   )
+  outer_Z <- simplify2array(outer_Z_list)
   # Taxon Specific Latent Traits
   f <- lambda_F <- matrix(NA, S + phy$Nnode, L)
+  outer_F <- array(NA, dim = c(L, L, S + phy$Nnode))
   # Terminal nodes
   for (i in 1:S) {
     lambda_F[i, ] <- compute_terminal_taxon_specific_latent_trait_precision(
@@ -184,6 +190,10 @@ initialise_plvm <- function(
       conditional_expectation_weight = phylogenetic_GP[i, "weight", ],
       conditional_standard_deviation = phylogenetic_GP[i, "sd", ],
       latent_trait_precision = lambda_F[i, ],
+      perform_checks = perform_checks
+    )
+    outer_F[, , i] <- gaussian_outer_product_expectation(
+      expected_value = f[i, ], precision_matrix = diag(lambda_F[i, ]),
       perform_checks = perform_checks
     )
   }
@@ -205,6 +215,10 @@ initialise_plvm <- function(
       latent_trait_precision = lambda_F[i, ],
       perform_checks = perform_checks
     )
+    outer_F[, , i] <- gaussian_outer_product_expectation(
+      expected_value = f[i, ], precision_matrix = diag(lambda_F[i, ]),
+      perform_checks = perform_checks
+    )
   }
 
   out <- list(
@@ -217,17 +231,18 @@ initialise_plvm <- function(
     scaled_conditional_loading_row_variance_vector = c_star,
     loading_prior_correlation = loading_prior_correlation,
     loading_expectation = W,
-    loading_row_precision_list = lambda_W_list,
-    loading_row_outer_product_expectation = outer_W_list,
+    loading_row_precision = lambda_W,
+    loading_row_outer_product_expectation = outer_W,
     within_taxon_amplitude = within_taxon_amplitude,
     individual_specific_latent_trait_precision = lambda_Z,
     individual_specific_latent_trait_expectation = Z,
-    individual_specific_latent_trait_outer_product_expectation = outer_Z_list,
+    individual_specific_latent_trait_outer_product_expectation = outer_Z,
     heritable_amplitude = heritable_amplitude,
     length_scale = length_scale,
     phylogenetic_GP = phylogenetic_GP,
     taxon_specific_latent_trait_precision = lambda_F,
-    taxon_specific_latent_trait_expectation = f
+    taxon_specific_latent_trait_expectation = f,
+    taxon_specific_latent_trait_outer_product_expectation = outer_F
   )
 
   out

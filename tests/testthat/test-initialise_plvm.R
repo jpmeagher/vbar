@@ -192,11 +192,17 @@ test_that("plvm initialised for cavi", {
   checkmate::expect_matrix(
     plvm$loading_expectation, mode = "numeric", nrows = D_p, ncols = L
   )
-  checkmate::expect_list(
-    plvm$loading_row_outer_product_expectation, len = D_p
+  checkmate::expect_array(
+    plvm$loading_row_outer_product_expectation, d = 3
   )
-  checkmate::expect_list(
-    plvm$loading_row_precision_list, len = D_p
+  checkmate::expect_set_equal(
+    dim(plvm$loading_row_outer_product_expectation), c(L, L, D_p)
+  )
+  checkmate::expect_array(
+    plvm$loading_row_precision, d = 3
+  )
+  checkmate::expect_set_equal(
+    dim(plvm$loading_row_precision), c(L, L, D_p)
   )
   checkmate::expect_numeric(
     plvm$within_taxon_amplitude,
@@ -208,8 +214,11 @@ test_that("plvm initialised for cavi", {
   checkmate::expect_matrix(
     plvm$individual_specific_latent_trait_expectation, mode = "numeric", nrows = N, ncols = L
   )
-  checkmate::expect_list(
-    plvm$individual_specific_latent_trait_outer_product_expectation, len = N
+  checkmate::expect_array(
+    plvm$individual_specific_latent_trait_outer_product_expectation, d = 3
+  )
+  checkmate::expect_set_equal(
+    dim(plvm$individual_specific_latent_trait_outer_product_expectation), c(L, L, N)
   )
   checkmate::expect_array(
     plvm$phylogenetic_GP, mode = "numeric", any.missing = FALSE, d = 3
@@ -231,5 +240,10 @@ test_that("plvm initialised for cavi", {
     nrows = S + ph$Nnode, ncols = L, any.missing = FALSE,
     mode = "numeric"
   )
-
+  checkmate::expect_array(
+    plvm$taxon_specific_latent_trait_outer_product_expectation, d = 3
+  )
+  checkmate::expect_set_equal(
+    dim(plvm$taxon_specific_latent_trait_outer_product_expectation), c(L, L, S + ph$Nnode)
+  )
 })

@@ -107,12 +107,14 @@ nominal_link <- function(
 #' @param n_samples A positive integer. The number of independent samples drawn
 #'   to obtain the Monte Carlo estimate.
 #' @inheritParams ordinal_inverse_link
+#' @param log_out Logical. Should the log probability be returned.
 #'
-#' @return A real number on the unit interval.
+#' @return A (log) probability scalar.
 #' @export
 nominal_probit_normalising_constant <- function(
   i, mu, n_samples = 1000,
   random_seed = NULL,
+  log_out = FALSE,
   perform_checks = TRUE
 ){
   if (perform_checks == TRUE) {
@@ -128,9 +130,11 @@ nominal_probit_normalising_constant <- function(
   set.seed(random_seed)
   u <- stats::rnorm(n_samples)
   z <- sapply(u, function(x) x + mu[i] - mu[-i])
-  mean(apply(
+  Z <- mean(apply(
     stats::pnorm(z), 2, prod
   ))
+  if (log_out) return(log(Z))
+  Z
 }
 
 #' Ordinal Probit Normalising Constant
@@ -140,10 +144,12 @@ nominal_probit_normalising_constant <- function(
 #' mean of the underlying Gaussian distribution with variance 1.
 #'
 #' @inheritParams ordinal_inverse_link
+#' @param log_out Logical. Should the log probability be returned.
 #'
-#' @return  A vector of real numbers on the unit interval.
+#' @return  A vector of (log) probabilities.
 ordinal_probit_normalising_constant <- function(
   y, mu, cut_off_points,
+  log_out = TRUE,
   perform_checks = TRUE
 ){
   N <- length(mu)
@@ -164,7 +170,13 @@ ordinal_probit_normalising_constant <- function(
     )
   }
   i <- as.numeric(y)
-  stats::pnorm(cut_off_points[i+1] - mu) - stats::pnorm(cut_off_points[i] - mu)
+  log_Z <- stats::pnorm(cut_off_points[i+1], mean = mu, log.p = TRUE) +
+    log1p(-exp(
+      stats::pnorm(cut_off_points[i], mean = mu, log.p = TRUE) -
+        stats::pnorm(cut_off_points[i+1], mean = mu, log.p = TRUE)
+    ))
+  if (log_out) return(log_Z)
+  exp(log_Z)
 }
 
 #' Expectation of multinomial probit auxiliary variables
@@ -376,4 +388,58 @@ map_precision_to_auxiliary_traits <- function(
     precision_vector[auxiliary_trait_index[[trait_names[i]]]] <- precision[trait_names[i]]
   }
   precision_vector
+}
+
+#' Ordinal Trait ELBO
+#'
+#' Compute the contribution of an ordinal trait to the Evidence Lower Bound
+#' (ELBO) of a PLVM given the approximate posterior distribution for loadings
+#' and latent traits.
+#'
+#' @inheritParams ordinal_probit_normalising_constant
+#' @param loading_expectation A L-dimensional vector of real numbers, The row of
+#'   the expected loading matrix corresponding to the ordinal trait.
+#' @param latent_trait_expectation An NxL matrix of real values. The expected
+#'   individual specific latent traits.
+#' @param loading_outer_expectation A LxL matrix. The expected outer product for
+#'   the row of the expected loading matrix corresponding to the ordinal trait.
+#' @param latent_trait_outer_expectation A LxLxN array, The expected outer
+#'   product of individual specific latent traits.
+#'
+#' @return A real valued scalar. The contribution of the ordinal trait to the
+#'   ELBO.
+compute_ordinal_auxiliary_trait_elbo <- function(
+  y, cut_off_points,
+  loading_expectation, latent_trait_expectation,
+  loading_outer_expectation, latent_trait_outer_expectation,
+  perform_checks = TRUE
+){
+  K <- length(cut_off_points) - 1
+  N <- length(y)
+  L <- length(loading_expectation)
+  if (perform_checks) {
+    checkmate::assert_vector(
+      loading_expectation, strict = T, any.missing = FALSE
+    )
+    checkmate::assert_matrix(
+      latent_trait_expectation, mode = "numeric",
+      ncols = L, any.missing = FALSE
+    )
+    checkmate::assert_matrix(
+      loading_outer_expectation, mode = "numeric",
+      any.missing = FALSE, ncols = L, nrows = L
+    )
+    checkmate::assert_array(
+      latent_trait_outer_expectation,
+      mode = "numeric", any.missing = FALSE, d = 3
+    )
+  }
+  log_Z <- ordinal_probit_normalising_constant(
+    y = y, mu = latent_trait_expectation %*% loading_expectation,
+    cut_off_points = cut_off_points, log_out = TRUE,
+    perform_checks = perform_checks
+  )
+  m_ex_2 <- (latent_trait_expectation %*% loading_expectation)^2
+  sum_m_2_ex <- sum(diag(loading_outer_expectation %*% apply(latent_trait_outer_expectation, c(1, 2), sum)))
+  sum(log_Z) + (0.5 * (sum(m_ex_2) - sum_m_2_ex))
 }

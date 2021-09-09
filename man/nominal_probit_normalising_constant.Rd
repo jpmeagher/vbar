@@ -9,6 +9,7 @@ nominal_probit_normalising_constant(
   mu,
   n_samples = 1000,
   random_seed = NULL,
+  log_out = FALSE,
   perform_checks = TRUE
 )
 }
@@ -23,11 +24,13 @@ to obtain the Monte Carlo estimate.}
 
 \item{random_seed}{A single value, interpreted as an integer, or NULL.}
 
+\item{log_out}{Logical. Should the log probability be returned.}
+
 \item{perform_checks}{Logical. Check if function inputs are specified
 correctly.}
 }
 \value{
-A real number on the unit interval.
+A (log) probability scalar.
 }
 \description{
 Computes a Monte Carlo estimate for probability that a K-dimensional
