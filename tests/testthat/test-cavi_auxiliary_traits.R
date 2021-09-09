@@ -115,9 +115,9 @@ test_that("nominal trait normalising constant", {
   )
 })
 
-test_that("ordinal trait normalisisng constant", {
+test_that("ordinal trait normalising constant", {
   gamma <- c(-Inf, 0, sort(runif(2)), Inf)
-  K <- length(gamma - 1)
+  K <- length(gamma) - 1
   N <- 100
   mu <- rnorm(N, sd = 0.25)
   X <- rnorm(N, mean  = mu)
@@ -409,7 +409,7 @@ test_that("Ordinal auxiliary trait elbo computed", {
     simplify2array()
 
   gamma <- c(-Inf, 0, sort(runif(2)), Inf)
-  K <- length(gamma - 1)
+  K <- length(gamma) -1
   X <- rnorm(N, mean = Z %*% w)
   y <- sapply(X, function(x) sum(x > gamma))
   expect_true(
@@ -432,5 +432,58 @@ test_that("Ordinal auxiliary trait elbo computed", {
       perform_checks = TRUE
     ),
     log_Z + (0.5 *(m_ex_2 - m_2_ex))
+  )
+})
+
+test_that("Nominal auxiliary trait elbo computed", {
+  N <- 100
+  L <- 4
+  K <- 5
+  W <- matrix(rnorm(L*K), K, L)
+  Z <- matrix(rnorm(L*N), N, L)
+  W_outer <- lapply(
+    1:K, function(i){
+      (W[i, ] %*% t(W[i, ])) + diag(runif(L))
+    }) %>%
+    simplify2array()
+  Z_outer <- lapply(
+    1:N, function(i){
+      (Z[i, ] %*% t(Z[i, ])) + diag(runif(L))
+    }) %>%
+    simplify2array()
+  M <- Z %*% t(W)
+  X <- t(apply(M, 1, function(x) rnorm(K, mean = x)))
+  y <- apply(X, 1, which.max)
+  y_fac <- factor(y, ordered = FALSE)
+  set.seed(101)
+  log_Z <- sapply(
+    1:N, function(j){
+      nominal_probit_normalising_constant(
+        y[j], mu = M[j, ], n_samples = 1000,
+        random_seed = NULL,
+        log_out = TRUE,
+        perform_checks = TRUE
+      )
+    }
+  )
+  i <- 1
+  m_2_ex <- sum(sapply(
+    1:N, function(i){
+      sum(sapply(
+        1:K, function(j){
+          sum(diag(W_outer[, , j] %*% Z_outer[, , i]))
+        }
+      ))
+    }))
+
+  expect_equal(
+    compute_nominal_auxiliary_trait_elbo(
+      y = y_fac, n_samples = 1000, random_seed = 101,
+      loading_expectation = W, latent_trait_expectation = Z,
+      loading_outer_expectation = W_outer, latent_trait_outer_expectation = Z_outer,
+      perform_checks = TRUE
+    ),
+    sum(log_Z) + (0.5 * (sum(M^2) - m_2_ex)),
+    tolerance = 0.001
   )
 })

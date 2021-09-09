@@ -423,7 +423,7 @@ compute_ordinal_auxiliary_trait_elbo <- function(
     )
     checkmate::assert_matrix(
       latent_trait_expectation, mode = "numeric",
-      ncols = L, any.missing = FALSE
+      nrows = N, ncols = L, any.missing = FALSE
     )
     checkmate::assert_matrix(
       loading_outer_expectation, mode = "numeric",
@@ -442,4 +442,69 @@ compute_ordinal_auxiliary_trait_elbo <- function(
   m_ex_2 <- (latent_trait_expectation %*% loading_expectation)^2
   sum_m_2_ex <- sum(diag(loading_outer_expectation %*% apply(latent_trait_outer_expectation, c(1, 2), sum)))
   sum(log_Z) + (0.5 * (sum(m_ex_2) - sum_m_2_ex))
+}
+
+#' Nominal Trait ELBO
+#'
+#' Compute the contribution of an ordinal trait to the Evidence Lower Bound
+#' (ELBO) of a PLVM given the approximate posterior distribution for loadings
+#' and latent traits.
+#'
+#' @inheritParams nominal_inverse_link
+#' @inheritParams nominal_probit_normalising_constant
+#' @param loading_expectation A KxL vector of real numbers, The row of
+#'   the expected loading matrix corresponding to the nominal trait.
+#' @param latent_trait_expectation An NxL matrix of real values. The expected
+#'   individual specific latent traits.
+#' @param loading_outer_expectation A LxLxK array. The expected outer products for
+#'   the row of the expected loading matrix corresponding to the nominal trait.
+#' @param latent_trait_outer_expectation A LxLxN array. The expected outer
+#'   product of individual specific latent traits.
+#'
+#' @return A real valued scalar. The contribution of the nominal trait to the
+#'   ELBO.
+compute_nominal_auxiliary_trait_elbo <- function(
+  y, n_samples = 1000, random_seed = NULL,
+  loading_expectation, latent_trait_expectation,
+  loading_outer_expectation, latent_trait_outer_expectation,
+  perform_checks = TRUE
+){
+  K <- nrow(loading_expectation)
+  L <- ncol(loading_expectation)
+  N <- length(y)
+  if (perform_checks) {
+    checkmate::assert_factor(y, n.levels = K, ordered = FALSE, any.missing = FALSE)
+    checkmate::assert_matrix(
+      loading_expectation, mode = "numeric", any.missing = FALSE
+    )
+    checkmate::assert_matrix(
+      latent_trait_expectation, mode = "numeric",
+      ncols = L, any.missing = FALSE
+    )
+    checkmate::assert_array(
+      loading_outer_expectation, mode = "numeric", d = 3,
+      any.missing = FALSE
+    )
+    checkmate::assert_array(
+      latent_trait_outer_expectation,
+      mode = "numeric", any.missing = FALSE, d = 3
+    )
+  }
+  set.seed(random_seed)
+  num_y <- as.numeric(y)
+  m_ex <- latent_trait_expectation %*% t(loading_expectation)
+  log_Z <- sapply(
+    1:N, function(j){
+      nominal_probit_normalising_constant(
+        num_y[j], mu = m_ex[j, ], n_samples = n_samples,
+        random_seed = NULL,
+        log_out = TRUE,
+        perform_checks = (j == 1)
+      )
+    }
+  )
+  sum_m_2_ex <- sum(diag(
+    apply(loading_outer_expectation, c(1, 2), sum) %*% apply(latent_trait_outer_expectation, c(1, 2), sum)
+  ))
+  sum(log_Z) + (0.5 * (sum(m_ex^2) - sum_m_2_ex))
 }
