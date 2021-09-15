@@ -24,7 +24,7 @@ to obtain the Monte Carlo estimate.}
 
 \item{random_seed}{A single value, interpreted as an integer, or NULL.}
 
-\item{loading_expectation}{A KxL vector of real numbers, The row of
+\item{loading_expectation}{A KxL matrix of real numbers, The row of
 the expected loading matrix corresponding to the nominal trait.}
 
 \item{latent_trait_expectation}{An NxL matrix of real values. The expected
@@ -44,7 +44,7 @@ A real valued scalar. The contribution of the nominal trait to the
   ELBO.
 }
 \description{
-Compute the contribution of an ordinal trait to the Evidence Lower Bound
+Compute the contribution of a nominal trait to the Evidence Lower Bound
 (ELBO) of a PLVM given the approximate posterior distribution for loadings
 and latent traits.
 }

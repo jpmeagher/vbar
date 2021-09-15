@@ -487,3 +487,67 @@ test_that("Nominal auxiliary trait elbo computed", {
     tolerance = 0.001
   )
 })
+
+test_that("Continuous auxiliary trait elbo computed", {
+  N <- 100
+  L <- 4
+  w <- rnorm(L)
+  w_var <-  diag(runif(L))
+  w_outer <- (w %*% t(w)) + w_var
+  Z <- matrix(rnorm(L*N), N, L)
+  Z_var <- diag(runif(L))
+  Z_outer <- lapply(
+    1:N, function(i){
+      (Z[i, ] %*% t(Z[i, ])) + Z_var
+    }) %>%
+    simplify2array()
+  M <- Z %*% w
+  lambda <- 10
+  X <- rnorm(N, mean = M, sd = sqrt(1 / lambda))
+
+  M_2_ex <- sum(
+    diag(
+      apply(w_outer, c(1, 2), sum) %*% apply(Z_outer, c(1, 2), sum)
+    )
+  )
+
+  expect_equal(
+    compute_continuous_auxiliary_trait_elbo(
+      auxiliary_trait = X,
+      loading_expectation = w, latent_trait_expectation = Z, precision = lambda,
+      loading_outer_expectation = w_outer, latent_trait_outer_expectation = Z_outer,
+      perform_checks = TRUE
+    ),
+    - (0.5 * N * log( 2 * pi)) - (0.5 * N * log(lambda)) -
+      (lambda * (sum(X^2) - (2 * c(t(X) %*% M)) + M_2_ex) / 2)
+  )
+
+  D_p <- 10
+  W <- matrix(rnorm(L*D_p), D_p, L)
+  W_var <-  lapply(1:D_p, function(i) diag(runif(L)))
+  W_outer <- lapply(
+    1:D_p, function(i){
+      (W[i, ] %*% t(W[i, ])) + W_var[[i]]
+    }) %>%
+    simplify2array()
+
+  M <- Z %*% t(W)
+  X <-  M + matrix(rnorm(N*D_p, sd = sqrt(1 / lambda)), N, D_p)
+
+  M_2_ex <- sum(
+    diag(
+      apply(w_outer, c(1, 2), sum) %*% apply(Z_outer, c(1, 2), sum)
+    )
+  )
+
+  expect_equal(
+    compute_continuous_auxiliary_trait_elbo(
+      auxiliary_trait = X,
+      loading_expectation = W, latent_trait_expectation = Z, precision = lambda,
+      loading_outer_expectation = w_outer, latent_trait_outer_expectation = Z_outer,
+      perform_checks = TRUE
+    ),
+    - (0.5 * N * D_p * log( 2 * pi)) - (0.5 * N * D_p * log(lambda)) -
+      (lambda * (sum(X^2) - (2 * sum(diag(t(X) %*% M))) + M_2_ex) / 2)
+  )
+})

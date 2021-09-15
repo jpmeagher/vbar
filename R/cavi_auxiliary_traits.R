@@ -446,13 +446,13 @@ compute_ordinal_auxiliary_trait_elbo <- function(
 
 #' Nominal Trait ELBO
 #'
-#' Compute the contribution of an ordinal trait to the Evidence Lower Bound
+#' Compute the contribution of a nominal trait to the Evidence Lower Bound
 #' (ELBO) of a PLVM given the approximate posterior distribution for loadings
 #' and latent traits.
 #'
 #' @inheritParams nominal_inverse_link
 #' @inheritParams nominal_probit_normalising_constant
-#' @param loading_expectation A KxL vector of real numbers, The row of
+#' @param loading_expectation A KxL matrix of real numbers, The row of
 #'   the expected loading matrix corresponding to the nominal trait.
 #' @param latent_trait_expectation An NxL matrix of real values. The expected
 #'   individual specific latent traits.
@@ -507,4 +507,79 @@ compute_nominal_auxiliary_trait_elbo <- function(
     apply(loading_outer_expectation, c(1, 2), sum) %*% apply(latent_trait_outer_expectation, c(1, 2), sum)
   ))
   sum(log_Z) + (0.5 * (sum(m_ex^2) - sum_m_2_ex))
+}
+
+#' Continuous Trait ELBO
+#'
+#' Compute the contribution of a continuous trait to the Evidence Lower Bound
+#' (ELBO) of a PLVM given the approximate posterior distribution for loadings
+#' and latent traits
+#'
+#' @param auxiliary_trait Either an N-dimensional vector or a NxD' matrix of
+#'   real values. The auxiliary trait measurements associated with a single
+#'   scalar- or function-valued trait.
+#' @param loading_expectation Either a L-dimensional vector or D'xL matrix of
+#'   real numbers, The row(s) of the expected loading matrix corresponding to
+#'   the continuous trait.
+#' @param latent_trait_expectation An NxL matrix of real values. The expected
+#'   individual specific latent traits.
+#' @param loading_outer_expectation A LxL matrix or LxLxD' array. The expected
+#'   outer product(s) for the row(s) of the expected loading matrix
+#'   corresponding to the continuous trait.
+#' @param latent_trait_outer_expectation A LxLxN array. The expected outer
+#'   product of individual specific latent traits.
+#' @param precision A positive real valued scalar. The precision with which the
+#'   auxiliary trait is observed.
+#' @inheritParams ou_kernel
+#'
+#' @return A scalar. The contribution to the ELBO made by the continuous trait.Ò
+compute_continuous_auxiliary_trait_elbo <- function(
+  auxiliary_trait,
+  loading_expectation, latent_trait_expectation, precision,
+  loading_outer_expectation, latent_trait_outer_expectation,
+  perform_checks = TRUE
+){
+  X <- as.matrix(auxiliary_trait)
+  N <- nrow(X)
+  D <- ncol(X)
+  L <- ncol(latent_trait_expectation)
+  if (perform_checks) {
+    checkmate::assert_matrix(
+      X, mode = "numeric", any.missing = FALSE
+    )
+    checkmate::assert(
+      checkmate::check_numeric(
+        loading_expectation, any.missing = FALSE, len = L
+      ),
+      checkmate::check_matrix(
+        loading_expectation, mode = "numeric", any.missing = FALSE,
+        nrows = D, ncols = L
+      )
+    )
+    checkmate::assert_number(precision, lower = 0)
+    checkmate::assert_matrix(
+      latent_trait_expectation, mode = "numeric",
+      ncols = L, any.missing = FALSE
+    )
+    checkmate::assert(
+      checkmate::check_matrix(
+        loading_outer_expectation, mode = "numeric", any.missing = FALSE,
+        nrows = L, ncols = L
+      ),
+      checkmate::check_array(
+        loading_outer_expectation, mode = "numeric", d = 3,
+        any.missing = FALSE
+      )
+    )
+  }
+  if (D == 1) loading_expectation = t(loading_expectation)
+  A1 <- - N * D * log(2 * pi) / 2
+  A2 <- - N * D * log(precision) / 2
+  A3.1 <- sum(diag(t(X) %*% X))
+  A3.2 <- - 2 * sum(diag(t(X) %*% (latent_trait_expectation %*% t(loading_expectation))))
+  A3.3 <- sum(diag(
+    apply(loading_outer_expectation, c(1, 2), sum) %*% apply(latent_trait_outer_expectation, c(1, 2), sum)
+  ))
+  A3 <- - precision * (A3.1 + A3.2 + A3.3) / 2
+  A1 + A2 + A3
 }
