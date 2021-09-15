@@ -78,7 +78,7 @@ initialise_loading <- function(
 #'   hyper-parameters on the loadings
 initialise_loading_ard_precision <- function(
   L,
-   ard_shape = 1,  ard_rate = 1,
+  ard_shape = 1,  ard_rate = 1,
   ard_precision = NULL,
   perform_checks = TRUE
 ){

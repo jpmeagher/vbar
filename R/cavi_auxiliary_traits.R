@@ -490,14 +490,13 @@ compute_nominal_auxiliary_trait_elbo <- function(
       mode = "numeric", any.missing = FALSE, d = 3
     )
   }
-  set.seed(random_seed)
   num_y <- as.numeric(y)
   m_ex <- latent_trait_expectation %*% t(loading_expectation)
   log_Z <- sapply(
     1:N, function(j){
       nominal_probit_normalising_constant(
         num_y[j], mu = m_ex[j, ], n_samples = n_samples,
-        random_seed = NULL,
+        random_seed = random_seed + j,
         log_out = TRUE,
         perform_checks = (j == 1)
       )
@@ -532,7 +531,7 @@ compute_nominal_auxiliary_trait_elbo <- function(
 #'   auxiliary trait is observed.
 #' @inheritParams ou_kernel
 #'
-#' @return A scalar. The contribution to the ELBO made by the continuous trait.Ò
+#' @return A scalar. The contribution to the ELBO made by the continuous trait.
 compute_continuous_auxiliary_trait_elbo <- function(
   auxiliary_trait,
   loading_expectation, latent_trait_expectation, precision,
@@ -581,5 +580,78 @@ compute_continuous_auxiliary_trait_elbo <- function(
     apply(loading_outer_expectation, c(1, 2), sum) %*% apply(latent_trait_outer_expectation, c(1, 2), sum)
   ))
   A3 <- - precision * (A3.1 + A3.2 + A3.3) / 2
-  A1 + A2 + A3
+  unname(A1 + A2 + A3)
+}
+
+#' Auxiliary Trait ELBO
+#'
+#' Compute the contribution of auxiliary traits to the Evidence Lower Bound
+#' (ELBO) of a PLVM given the approximate posterior distribution for loadings
+#' and latent traits
+#'
+#' @inheritParams initialise_plvm
+#' @param auxiliary_traits An NxD' matrix of real numbers. The
+#'   auxiliary traits.
+#' @param loading_expectation Either a D'xL matrix of
+#'   real numbers, The expected loading matrix.
+#' @param latent_trait_expectation An NxL matrix of real values. The expected
+#'   individual specific latent traits.
+#' @param loading_outer_expectation A LxLxD' array. The expected
+#'   outer products of the expected loading matrix.
+#' @param latent_trait_outer_expectation A LxLxN array. The expected outer
+#'   product of individual specific latent traits.
+#' @param precision A P-dimensional vector of positive real values. The precision with which
+#'   auxiliary traits are observed.
+#' @inheritParams compute_nominal_auxiliary_trait_elbo
+#' @inheritParams compute_ordinal_auxiliary_trait_elbo
+#'
+#' @return A scalar. The contribution of Auxiliary traits to the ELBO.
+compute_auxiliary_trait_elbo <- function(
+  manifest_trait_df, metadata,
+  auxiliary_traits,
+  loading_expectation, latent_trait_expectation,
+  precision, cut_off_points,
+  loading_outer_expectation, latent_trait_outer_expectation,
+  n_samples = 1000, random_seed = NULL,
+  perform_checks = TRUE
+){
+  P <- nrow(metadata)
+  elbo <- rep(NA, P)
+  for (i in 1:P) {
+    if (metadata$trait_type[i] %in% c("con", "fvt")) {
+      elbo[i] <- compute_continuous_auxiliary_trait_elbo(
+        auxiliary_trait = auxiliary_traits[, metadata$auxiliary_trait_index[[i]]],
+        loading_expectation = loading_expectation[metadata$auxiliary_trait_index[[i]], ],
+        latent_trait_expectation = latent_trait_expectation,
+        precision = precision[i],
+        loading_outer_expectation = loading_outer_expectation[, , metadata$auxiliary_trait_index[[i]]],
+        latent_trait_outer_expectation = latent_trait_outer_expectation,
+        perform_checks = perform_checks
+      )
+    } else {
+      if (metadata$trait_type[i] == "nom") {
+        elbo[i] <- compute_nominal_auxiliary_trait_elbo(
+          y = manifest_trait_df[, metadata$manifest_trait_index[[i]]],
+          n_samples = n_samples, random_seed = random_seed,
+          loading_expectation = loading_expectation[metadata$auxiliary_trait_index[[i]], ],
+          latent_trait_expectation = latent_trait_expectation,
+          loading_outer_expectation = loading_outer_expectation[, , metadata$auxiliary_trait_index[[i]]],
+          latent_trait_outer_expectation = latent_trait_outer_expectation,
+          perform_checks = perform_checks
+        )
+      }
+      if (metadata$trait_type[i] == "ord") {
+        elbo[i] <- compute_ordinal_auxiliary_trait_elbo(
+          y = manifest_trait_df[, metadata$manifest_trait_index[[i]]],
+          cut_off_points = metadata$cut_off_points[[i]],
+          loading_expectation = loading_expectation[metadata$auxiliary_trait_index[[i]], ],
+          latent_trait_expectation = latent_trait_expectation,
+          loading_outer_expectation = loading_outer_expectation[, , metadata$auxiliary_trait_index[[i]]],
+          latent_trait_outer_expectation = latent_trait_outer_expectation,
+          perform_checks = perform_checks
+        )
+      }
+    }
+  }
+  sum(elbo)
 }

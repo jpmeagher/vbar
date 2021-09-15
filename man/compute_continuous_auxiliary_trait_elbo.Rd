@@ -40,7 +40,7 @@ product of individual specific latent traits.}
 correctly.}
 }
 \value{
-A scalar. The contribution to the ELBO made by the continuous trait.Ò
+A scalar. The contribution to the ELBO made by the continuous trait.
 }
 \description{
 Compute the contribution of a continuous trait to the Evidence Lower Bound
