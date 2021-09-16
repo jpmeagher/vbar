@@ -300,4 +300,107 @@ compute_internal_taxon_specific_latent_trait_expectation <- function(
   tmp / latent_trait_precision
 }
 
-
+#' Individual Specific Latent Trait Trait ELBO
+#'
+#' Compute the contribution of individual specific latent traits to the Evidence
+#' Lower Bound (ELBO) of a PLVM given the approximate posterior distribution for
+#' loadings and latent traits
+#'
+#' @param individual_specific_latent_trait_expectation A NxL matrix of real
+#'   values. The expected value of the individual specific latent traits.
+#' @param taxon_id A N-dimensional vector of labels. Matches each individual
+#'   specific latent trait to a terminal node in \eqn{phy}. Each element must
+#'   correspond to one of \eqn{phy$tip.labels}.
+#' @inheritParams simulate_phylogenetic_ou
+#' @param terminal_taxon_specific_latent_trait_expectation A SxL matrix of real
+#'   values. The expected taxon-specific latent trait for terminal nodes in
+#'   \eqn{phy}. Rows must be ordered by \eqn{phy$tip.labels}.
+#' @param individual_specific_latent_trait_covariance A LxL covariance matrix.
+#'   The covariance of individual specific latent traits under the approximate
+#'   posterior.
+#' @param individual_specific_latent_trait_outer_product_expectation A LxLxN
+#'   array of real values. The expected outer product of individual specific
+#'   latent traits under the approximate posterior.
+#' @param terminal_taxon_latent_trait_outer_product_expectation A LxLxS rray of
+#'   real values. The expected outer product of taxon specific latent traits at
+#'   terminal nodes under the approximate posterior.
+#' @inheritParams compute_individual_specific_latent_trait_precision
+#'
+#' @return A real valued scalar. The contribution of individual specific latent
+#'   traits to the ELBO.
+compute_individual_specific_latent_trait_elbo <- function(
+  individual_specific_latent_trait_expectation,
+  taxon_id, phy,
+  terminal_taxon_specific_latent_trait_expectation,
+  individual_specific_latent_trait_covariance,
+  individual_specific_latent_trait_outer_product_expectation,
+  terminal_taxon_latent_trait_outer_product_expectation,
+  within_taxon_amplitude,
+  perform_checks = TRUE
+){
+  N <- nrow(individual_specific_latent_trait_expectation)
+  L <- ncol(individual_specific_latent_trait_expectation)
+  S <- length(phy$tip.label)
+  if (perform_checks) {
+    checkmate::assert_matrix(individual_specific_latent_trait_expectation, mode = "numeric", any.missing = FALSE)
+    checkmate::assert_set_equal(
+      sort(phy$tip.label),
+      sort(taxon_id)
+    )
+    checkmate::assert_matrix(
+      terminal_taxon_specific_latent_trait_expectation, mode = "numeric", any.missing = FALSE,
+      nrows = S, ncol = L
+    )
+    checkmate::assert_matrix(
+      individual_specific_latent_trait_covariance, mode = "numeric", any.missing = FALSE,
+      nrows = L, ncol = L
+    )
+    checkmate::assert_array(
+      terminal_taxon_latent_trait_outer_product_expectation, mode = "numeric",
+      any.missing = FALSE, d = 3
+    )
+    checkmate::assert_set_equal(
+      dim(terminal_taxon_latent_trait_outer_product_expectation),
+      c(L, L, S)
+    )
+    checkmate::assert_array(
+      individual_specific_latent_trait_outer_product_expectation, mode = "numeric",
+      any.missing = FALSE, d = 3
+    )
+    checkmate::assert_set_equal(
+      dim(individual_specific_latent_trait_outer_product_expectation),
+      c(L, L, N)
+    )
+    checkmate::assert_numeric(
+      within_taxon_amplitude, len = L, any.missing = FALSE
+    )
+  }
+  individuals_per_taxon <- as.numeric(
+    table(taxon_id)[phy$tip.label]
+    )
+  A1 <- - N * sum(log(within_taxon_amplitude))
+  A2.1 <- apply(
+    individual_specific_latent_trait_outer_product_expectation,
+    c(1, 2), sum
+  )
+  A2.2 <- apply(sweep(
+    terminal_taxon_latent_trait_outer_product_expectation,
+    3, individuals_per_taxon, "*"
+    ), c(1, 2), sum
+  )
+  A2 <- -0.5 * sum(diag(
+    (A2.1 + A2.2) %*% diag(within_taxon_amplitude^-2)
+  ))
+  A3 <- sum(sapply(
+    1:S,
+    function(i){
+      t(terminal_taxon_specific_latent_trait_expectation[i, ]) %*%
+        diag(within_taxon_amplitude^-2) %*%
+        colSums(
+          individual_specific_latent_trait_expectation[taxon_id == phy$tip.label[i], ]
+        )
+    }
+  ))
+  A4 <- N * sum(log(diag(chol(individual_specific_latent_trait_covariance))))
+  A1 + A2 + A3 + A4
+}
