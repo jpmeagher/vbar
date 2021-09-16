@@ -590,18 +590,17 @@ compute_continuous_auxiliary_trait_elbo <- function(
 #' and latent traits
 #'
 #' @inheritParams initialise_plvm
-#' @param auxiliary_traits An NxD' matrix of real numbers. The
-#'   auxiliary traits.
-#' @param loading_expectation Either a D'xL matrix of
-#'   real numbers, The expected loading matrix.
+#' @param auxiliary_traits An NxD' matrix of real numbers. The auxiliary traits.
+#' @param loading_expectation A D'xL matrix of real numbers, The expected
+#'   loading matrix.
 #' @param latent_trait_expectation An NxL matrix of real values. The expected
 #'   individual specific latent traits.
-#' @param loading_outer_expectation A LxLxD' array. The expected
-#'   outer products of the expected loading matrix.
+#' @param loading_outer_expectation A LxLxD' array. The expected outer products
+#'   of the expected loading matrix.
 #' @param latent_trait_outer_expectation A LxLxN array. The expected outer
 #'   product of individual specific latent traits.
-#' @param precision A P-dimensional vector of positive real values. The precision with which
-#'   auxiliary traits are observed.
+#' @param precision A P-dimensional vector of positive real values. The
+#'   precision with which auxiliary traits are observed.
 #' @inheritParams compute_nominal_auxiliary_trait_elbo
 #' @inheritParams compute_ordinal_auxiliary_trait_elbo
 #'

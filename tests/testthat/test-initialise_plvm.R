@@ -189,6 +189,13 @@ test_that("plvm initialised for cavi", {
   checkmate::expect_matrix(
     plvm$loading_prior_correlation, mode = "numeric", nrows = D_p, ncols = D_p
   )
+  checkmate::expect_number(
+    plvm$loading_prior_correlation_log_det
+  )
+  expect_equal(
+    plvm$loading_prior_correlation_log_det,
+    determinant(C_w)$modulus[[1]]
+  )
   checkmate::expect_matrix(
     plvm$loading_expectation, mode = "numeric", nrows = D_p, ncols = L
   )

@@ -96,6 +96,9 @@ initialise_plvm <- function(
     perform_checks = perform_checks
   )
   c_star <- compute_scaled_conditional_row_variance_vector(loading_prior_correlation)
+  U_C_w <- chol(loading_prior_correlation)
+  inv_C_w <- chol2inv(U_C_w)
+  log_det_C_w <- 2 * sum(log(diag(U_C_w)))
   W <- initialise_loading(
     D_prime = D_prime, L = L,
     ard_precision = alpha,
@@ -112,11 +115,17 @@ initialise_plvm <- function(
     perform_checks = perform_checks
   )
   lambda_W <- simplify2array(lambda_W_list)
+  inv_lambda_W <- simplify2array(lapply(
+    1:D_prime,
+    function(i){
+      chol2inv(chol(lambda_W[, , i]))
+    }
+  ))
   outer_W_list <- lapply(
     1:D_prime,
     function(i){
       gaussian_outer_product_expectation(
-        expected_value = W[i, ], precision_matrix = lambda_W_list[[i]],
+        expected_value = W[i, ], covariance_matrix = inv_lambda_W[, , i],
         perform_checks = perform_checks
       )
     }
@@ -149,6 +158,7 @@ initialise_plvm <- function(
     within_taxon_amplitude = within_taxon_amplitude,
     perform_checks = perform_checks
   )
+  inv_lambda_Z <- chol2inv(chol(lambda_Z))
   Z <- t(sapply(
     1:N, function(i) {
       compute_individual_specific_latent_trait_expectation(
@@ -166,7 +176,7 @@ initialise_plvm <- function(
     1:N,
     function(i){
       gaussian_outer_product_expectation(
-        expected_value = Z[i, ], precision_matrix = lambda_Z,
+        expected_value = Z[i, ], covariance_matrix = inv_lambda_Z,
         perform_checks = perform_checks
       )
     }
@@ -230,11 +240,15 @@ initialise_plvm <- function(
     ard_precision = alpha,
     scaled_conditional_loading_row_variance_vector = c_star,
     loading_prior_correlation = loading_prior_correlation,
+    inv_loading_prior_correlation = inv_C_w,
+    loading_prior_correlation_log_det = log_det_C_w,
     loading_expectation = W,
     loading_row_precision = lambda_W,
+    loading_row_covariance = inv_lambda_W,
     loading_row_outer_product_expectation = outer_W,
     within_taxon_amplitude = within_taxon_amplitude,
     individual_specific_latent_trait_precision = lambda_Z,
+    individual_specific_latent_trait_covariance = inv_lambda_Z,
     individual_specific_latent_trait_expectation = Z,
     individual_specific_latent_trait_outer_product_expectation = outer_Z,
     heritable_amplitude = heritable_amplitude,

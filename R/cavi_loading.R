@@ -228,3 +228,67 @@ compute_loading_row_precision_list <- function(
   )
 }
 
+#' Loading ELBO
+#'
+#' Compute the contribution of the loading matrix Evidence Lower Bound (ELBO) of
+#' a PLVM given the approximate posterior distribution for loadings, the prior
+#' correlation matrix, and ARD precision hyperparameters.
+#'
+#' @inheritParams compute_auxiliary_trait_elbo
+#' @param loading_row_covariance A LxLxD' array. The covariance of each row of
+#'   the loading matrix under the approximate posterior distribution.
+#' @param ard_precision An L-dimensional vector of real numbers. The ARD
+#'   precision hyper-parameters on the columns of the loading matrix.
+#' @param loading_prior_correlation_log_det A real valued scalar. The log
+#'   determinant of the loading prior correlation matrix.
+#' @param inv_loading_prior_correlation A D'xD' matrix. The inverse of the
+#'   loading prior correlation matrix.
+#' @param loading_prior_correlation A D'xD' matrix. The loading prior
+#'   correlation matrix.
+#'
+#' @return A real valued scalar. The contribution of the loading matrix to the
+#'   ELBO under the approximate posterior distribution.
+compute_loading_elbo <- function(
+  loading_expectation, loading_row_covariance,
+  ard_precision,
+  loading_prior_correlation_log_det = NULL,
+  inv_loading_prior_correlation = NULL,
+  loading_prior_correlation = NULL,
+  perform_checks = TRUE
+){
+  D <- nrow(loading_expectation)
+  L <- ncol(loading_expectation)
+  if (perform_checks) {
+    checkmate::assert_matrix(loading_expectation, mode = "numeric", any.missing = FALSE)
+    checkmate::assert_array(loading_row_covariance, mode = "numeric", d = 3, any.missing = FALSE)
+    checkmate::assert_set_equal(dim(loading_row_covariance), c(L, L, D))
+    checkmate::assert_numeric(ard_precision, len = L, any.missing = FALSE, lower = 0)
+    checkmate::assert_matrix(loading_prior_correlation, nrows = D, ncols = D, any.missing = FALSE, null.ok = TRUE)
+    checkmate::assert_matrix(inv_loading_prior_correlation, nrows = D, ncols = D, any.missing = FALSE, null.ok = TRUE)
+    checkmate::assert_number(loading_prior_correlation_log_det, null.ok = TRUE)
+  }
+  W_col_outer <- simplify2array(lapply(
+    1:L, function(i){
+      (loading_expectation[, i] %*% t(loading_expectation[, i])) +
+        diag(loading_row_covariance[i, i, ])
+      }
+  ))
+  if (is.null(loading_prior_correlation_log_det)) {
+    loading_prior_correlation_log_det <- 2 * sum(log(diag(chol(loading_prior_correlation))))
+  }
+  if (is.null(inv_loading_prior_correlation)) {
+    inv_loading_prior_correlation <- chol2inv(chol(loading_prior_correlation))
+  }
+  A1 <- - 0.5 * L * loading_prior_correlation_log_det
+  A2 <-  0.5 * D * sum(log(ard_precision))
+  A3 <- - sum(sapply(
+    1:L, function(i){
+      0.5 * ard_precision[i] * sum(diag(W_col_outer[, , i] %*% inv_loading_prior_correlation))
+    }
+  ))
+  A4 <- 0.5 * sum(sapply(
+    1:D, function(i) 2 * sum(log(diag(chol(exp(1) * loading_row_covariance[, , i]))))
+  ))
+  A1 + A2 + A3 + A4
+}
+

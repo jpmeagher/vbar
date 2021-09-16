@@ -27,23 +27,22 @@ that implicit in the manifest traits.}
 \item{metadata}{A data frame. Contains all the metadata required to map a set
 of manifest traits to the PLVM auxiliary traits..}
 
-\item{auxiliary_traits}{An NxD' matrix of real numbers. The
-auxiliary traits.}
+\item{auxiliary_traits}{An NxD' matrix of real numbers. The auxiliary traits.}
 
-\item{loading_expectation}{Either a D'xL matrix of
-real numbers, The expected loading matrix.}
+\item{loading_expectation}{A D'xL matrix of real numbers, The expected
+loading matrix.}
 
 \item{latent_trait_expectation}{An NxL matrix of real values. The expected
 individual specific latent traits.}
 
-\item{precision}{A P-dimensional vector of positive real values. The precision with which
-auxiliary traits are observed.}
+\item{precision}{A P-dimensional vector of positive real values. The
+precision with which auxiliary traits are observed.}
 
 \item{cut_off_points}{A K+1 dimensional ordered vector of values. The cut off
 points separating auxiliary traits into ordinal state.}
 
-\item{loading_outer_expectation}{A LxLxD' array. The expected
-outer products of the expected loading matrix.}
+\item{loading_outer_expectation}{A LxLxD' array. The expected outer products
+of the expected loading matrix.}
 
 \item{latent_trait_outer_expectation}{A LxLxN array. The expected outer
 product of individual specific latent traits.}
