@@ -321,7 +321,7 @@ compute_internal_taxon_specific_latent_trait_expectation <- function(
 #' @param individual_specific_latent_trait_outer_product_expectation A LxLxN
 #'   array of real values. The expected outer product of individual specific
 #'   latent traits under the approximate posterior.
-#' @param terminal_taxon_latent_trait_outer_product_expectation A LxLxS rray of
+#' @param terminal_taxon_latent_trait_outer_product_expectation A LxLxS array of
 #'   real values. The expected outer product of taxon specific latent traits at
 #'   terminal nodes under the approximate posterior.
 #' @inheritParams compute_individual_specific_latent_trait_precision
@@ -404,3 +404,91 @@ compute_individual_specific_latent_trait_elbo <- function(
   A4 <- N * sum(log(diag(chol(individual_specific_latent_trait_covariance))))
   A1 + A2 + A3 + A4
 }
+
+
+#' Taxon Specific Latent Trait Trait ELBO
+#'
+#' Compute the contribution of taxon specific latent traits to the Evidence
+#' Lower Bound (ELBO) of a PLVM given the approximate posterior distribution for
+#' loadings and latent traits
+#'
+#' @inheritParams simulate_phylogenetic_ou
+#' @param taxon_specific_latent_trait_expectation A (2S - 1)xL matrix of real
+#'   values. The expected value of the taxon specific latent traits.
+#' @param taxon_specific_latent_trait_outer_product_expectation A LxLx(2S - 1)
+#'   array of real values. The expected outer product of taxon specific latent
+#'   traits under the approximate posterior.
+#' @param taxon_specific_latent_trait_covariance A LxLx(2S - 1) array of real
+#'   values. The covariance of taxon specific latent traits under the
+#'   approximate posterior.
+#' @param phylogenetic_gp A (2S - 1)x2xL array of real values. Hyperparameters
+#'   for the Gaussian process over \eqn{phy}.
+#'
+#' @return A real valued scalar. The contribution of taxon specific latent
+#'   traits to the ELBO.
+compute_taxon_specific_latent_trait_elbo <- function(
+  taxon_specific_latent_trait_expectation,
+  taxon_specific_latent_trait_outer_product_expectation,
+  taxon_specific_latent_trait_covariance,
+  phy,
+  phylogenetic_gp,
+  perform_checks = TRUE
+){
+  S <- length(phy$tip.label)
+  L <- ncol(taxon_specific_latent_trait_expectation)
+  if (perform_checks) {
+    checkmate::assert_matrix(
+      taxon_specific_latent_trait_expectation, mode = "numeric", any.missing = FALSE,
+      nrow = 2*S - 1
+    )
+    checkmate::assert_array(
+      taxon_specific_latent_trait_outer_product_expectation,
+      mode = "numeric", any.missing = FALSE, d = 3
+    )
+    checkmate::assert_set_equal(
+      dim(taxon_specific_latent_trait_outer_product_expectation),
+      c(L, L, 2*S - 1)
+    )
+    checkmate::assert_matrix(taxon_specific_latent_trait_covariance)
+    checkmate::assert_array(
+      phylogenetic_gp,
+      mode = "numeric", any.missing = FALSE, d = 3
+    )
+    checkmate::assert_set_equal(
+      dim(phylogenetic_gp),
+      c(2*S - 1, 2, L)
+    )
+  }
+  traversal_order <- phy$edge[ape::postorder(phy), ]
+
+  A1 <- - sum(log(phylogenetic_gp[, "sd", ]))
+  A2.1 <- sum(sapply(
+    1:(2 *S - 2),
+    function(i) {
+      sum(diag(
+        (taxon_specific_latent_trait_outer_product_expectation[, , traversal_order[i, 2]] +
+          (diag(phylogenetic_gp[traversal_order[i, 2], "weight", ]^2) %*%
+             taxon_specific_latent_trait_outer_product_expectation[, , traversal_order[i, 1]])
+        ) %*%
+          diag(phylogenetic_gp[traversal_order[i, 2], "sd", ]^-2)
+      ))
+    }
+  ))
+  A2.2 <- sum(diag(
+    taxon_specific_latent_trait_outer_product_expectation[, , S + 1] %*%
+      diag(phylogenetic_gp[S + 1, "sd", ]^-2)
+  ))
+  A2 <- - 0.5 * (A2.1 + A2.2)
+  A3 <- sum(sapply(
+    1:(2 * S - 2),
+    function(i){
+      t(taxon_specific_latent_trait_expectation[traversal_order[i, 1], ] *
+          phylogenetic_gp[traversal_order[i, 2], "weight", ] *
+          (phylogenetic_gp[traversal_order[i, 2], "sd", ]^-2)) %*%
+        taxon_specific_latent_trait_expectation[traversal_order[i, 2], ]
+    }
+    ))
+  A4 <- 0.5 * sum(log(exp(1) * taxon_specific_latent_trait_covariance))
+  A1 + A2 + A3 + A4
+}
+

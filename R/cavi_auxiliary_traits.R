@@ -494,9 +494,14 @@ compute_nominal_auxiliary_trait_elbo <- function(
   m_ex <- latent_trait_expectation %*% t(loading_expectation)
   log_Z <- sapply(
     1:N, function(j){
+      if (is.null(random_seed)) {
+        rs <- NULL
+      } else {
+        rs <- random_seed + j
+      }
       nominal_probit_normalising_constant(
         num_y[j], mu = m_ex[j, ], n_samples = n_samples,
-        random_seed = random_seed + j,
+        random_seed = rs,
         log_out = TRUE,
         perform_checks = (j == 1)
       )
@@ -609,7 +614,7 @@ compute_auxiliary_trait_elbo <- function(
   manifest_trait_df, metadata,
   auxiliary_traits,
   loading_expectation, latent_trait_expectation,
-  precision, cut_off_points,
+  precision,
   loading_outer_expectation, latent_trait_outer_expectation,
   n_samples = 1000, random_seed = NULL,
   perform_checks = TRUE

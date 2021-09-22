@@ -38,7 +38,7 @@ posterior.}
 array of real values. The expected outer product of individual specific
 latent traits under the approximate posterior.}
 
-\item{terminal_taxon_latent_trait_outer_product_expectation}{A LxLxS rray of
+\item{terminal_taxon_latent_trait_outer_product_expectation}{A LxLxS array of
 real values. The expected outer product of taxon specific latent traits at
 terminal nodes under the approximate posterior.}
 

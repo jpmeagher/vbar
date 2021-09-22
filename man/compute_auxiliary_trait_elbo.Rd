@@ -11,7 +11,6 @@ compute_auxiliary_trait_elbo(
   loading_expectation,
   latent_trait_expectation,
   precision,
-  cut_off_points,
   loading_outer_expectation,
   latent_trait_outer_expectation,
   n_samples = 1000,
@@ -37,9 +36,6 @@ individual specific latent traits.}
 
 \item{precision}{A P-dimensional vector of positive real values. The
 precision with which auxiliary traits are observed.}
-
-\item{cut_off_points}{A K+1 dimensional ordered vector of values. The cut off
-points separating auxiliary traits into ordinal state.}
 
 \item{loading_outer_expectation}{A LxLxD' array. The expected outer products
 of the expected loading matrix.}

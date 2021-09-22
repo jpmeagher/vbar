@@ -132,8 +132,8 @@ initialise_plvm <- function(
   )
   outer_W <- simplify2array(outer_W_list)
   # Phylogenetic GP
-  if (is.null(within_taxon_amplitude)) within_taxon_amplitude <- stats::runif(L)
-  if (is.null(heritable_amplitude)) heritable_amplitude <- stats::runif(L)
+  if (is.null(within_taxon_amplitude)) within_taxon_amplitude <- 0.5 + 0.1 * stats::runif(L)
+  if (is.null(heritable_amplitude)) heritable_amplitude <- 0.25 + 0.5 * stats::runif(L)
   if (perform_checks) {
     checkmate::assert_numeric(
       heritable_amplitude, lower = 0, upper = 1, any.missing = FALSE, len = L
@@ -226,12 +226,15 @@ initialise_plvm <- function(
       perform_checks = perform_checks
     )
     outer_F[, , i] <- gaussian_outer_product_expectation(
-      expected_value = f[i, ], precision_matrix = diag(lambda_F[i, ]),
+      expected_value = f[i, ], covariance_matrix = diag(1 / lambda_F[i, ]),
       perform_checks = perform_checks
     )
   }
 
   out <- list(
+    manifest_trait_df = manifest_trait_df,
+    metadata = metadata,
+    phy = phy, id_label = id_label,
     auxiliary_traits = X,
     precision = lambda,
     precision_prior_shape = precision_prior_shape,
@@ -255,6 +258,7 @@ initialise_plvm <- function(
     length_scale = length_scale,
     phylogenetic_GP = phylogenetic_GP,
     taxon_specific_latent_trait_precision = lambda_F,
+    taxon_specific_latent_trait_covariance = 1 / lambda_F,
     taxon_specific_latent_trait_expectation = f,
     taxon_specific_latent_trait_outer_product_expectation = outer_F
   )
