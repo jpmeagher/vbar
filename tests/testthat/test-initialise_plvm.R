@@ -31,13 +31,15 @@ test_that("plvm initialised for cavi", {
     ord = function(y){
       ordinal_inverse_link(
         y, cut_off_points = gamma$ord,
-        mu = rep(0, N), return_expectation = FALSE
+        mu = rep(0, N), return_expectation = FALSE,
+        random_seed = 101
       )
     },
     nom = function(y){
       nominal_inverse_link(
         y, mu = matrix(0, N, length(cat$nom)),
-        n_samples = 1000, return_expectation = FALSE
+        n_samples = 1000, return_expectation = FALSE,
+        random_seed = 102
       )
     },
     con = function(y) y,
@@ -252,5 +254,43 @@ test_that("plvm initialised for cavi", {
   )
   checkmate::expect_set_equal(
     dim(plvm$taxon_specific_latent_trait_outer_product_expectation), c(L, L, S + ph$Nnode)
+  )
+
+  plvm1 <- initialise_plvm(
+    manifest_trait_df = mt, metadata = meta, phy = ph,
+    L = L,
+    loading_prior_correlation = C_w,
+    random_seed = 101,
+    auxiliary_traits = NULL,
+    precision_prior_shape = 1, precision_prior_rate = 0.01,
+    precision = NULL,
+    ard_precision = NULL,
+    ard_shape = 1, ard_rate = 1,
+    loading = NULL, method = "random",
+    within_taxon_amplitude = NULL,
+    heritable_amplitude = NULL,
+    length_scale = 2,
+    perform_checks = TRUE
+  )
+
+  plvm2 <- initialise_plvm(
+    manifest_trait_df = mt, metadata = meta, phy = ph,
+    L = L,
+    loading_prior_correlation = C_w,
+    random_seed = 101,
+    auxiliary_traits = NULL,
+    precision_prior_shape = 1, precision_prior_rate = 0.01,
+    precision = NULL,
+    ard_precision = NULL,
+    ard_shape = 1, ard_rate = 1,
+    loading = NULL, method = "random",
+    within_taxon_amplitude = NULL,
+    heritable_amplitude = NULL,
+    length_scale = 2,
+    perform_checks = TRUE
+  )
+
+  expect_equal(
+    plvm1, plvm2
   )
 })

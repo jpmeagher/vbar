@@ -23,7 +23,8 @@ initialise_plvm(
   within_taxon_amplitude = NULL,
   heritable_amplitude = NULL,
   length_scale = 2,
-  perform_checks = TRUE
+  perform_checks = TRUE,
+  random_seed = NULL
 )
 }
 \arguments{
@@ -88,6 +89,9 @@ Ornstein-Uhlenbeck process.}
 
 \item{perform_checks}{Logical. Check if function inputs are specified
 correctly.}
+
+\item{random_seed}{A single value, interpreted as an integer, or
+NULL.}
 }
 \value{
 A list of intital values for a PLVM..

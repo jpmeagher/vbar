@@ -14,6 +14,7 @@
 #'   non null checks that the loading matrix is of the correct type and size.
 #' @param method A string. Either \eqn{"random"} or \eqn{"pca"} indicating the
 #'   type of initialisation adopted.
+#' @param random_seed A single value, interpreted as an integer, or NULL.
 #' @param auxiliary_traits An NxD' matrix of real numbers. The initial matrix of
 #'   auxiliary traits. Only required when \eqn{method == "pca"}
 #' @inheritParams ou_kernel
@@ -22,7 +23,7 @@
 initialise_loading <- function(
   D_prime, L,
   ard_precision, loading_prior_correlation,
-  loading = NULL, method = "random",
+  loading = NULL, method = "random", random_seed = NULL,
   auxiliary_traits = NULL,
   perform_checks = TRUE
 ){
@@ -51,6 +52,7 @@ initialise_loading <- function(
     W <- sweep(W_star, 2, pca$sdev[1:L], "*")
   }
   if (method == "random") {
+    set.seed(random_seed)
     sigma <- sqrt(1 / ard_precision)
     L_chol <- t(chol(loading_prior_correlation))
     Z <- matrix(stats::rnorm(D_prime * L), nrow = D_prime, ncol = L)
@@ -120,6 +122,35 @@ compute_scaled_conditional_row_variance_vector <- function(
     c(C[i, i] - C[i, -i] %*% (chol2inv(chol(C[-i, -i])) %*% C[-i, i]))
   })
   c_star
+}
+
+#' Loading Row Conditional Mean Weight
+#'
+#' Compute the weight of the remaining loading matrix in the conditional mean
+#' for each row of the loading matrix.
+#'
+#' @inheritParams initialise_loading
+#'
+#' @return A D'x(D'-1) matrix of positive real numbers. The weight of the
+#'   remaining loading matrix in the conditional mean of each row in the loading
+#'   matrix.
+compute_loading_row_conditional_mean_weight_matrix <- function(
+  loading_prior_correlation,
+  perform_checks = TRUE
+){
+  if (perform_checks) {
+    checkmate::assert_true(isSymmetric(loading_prior_correlation))
+    checkmate::assert_true(matrixcalc::is.positive.definite(loading_prior_correlation))
+  }
+  C <- loading_prior_correlation
+  D_prime <- nrow(C)
+  loading_conditional_mean_weights <- sapply(
+    1:D_prime,
+    function(i){
+      C[i, -i] %*% chol2inv(chol(C[-i, -i]))
+      }
+    )
+  t(loading_conditional_mean_weights)
 }
 
 #' Compute precision for a row of the Loading Matrix
@@ -226,6 +257,79 @@ compute_loading_row_precision_list <- function(
       )
     }
   )
+}
+
+#' Compute Loading Expectation
+#'
+#' Compute the expectation of the PLVM loading under the approximate posterior.
+#'
+#' @inheritParams compute_loading_row_precision_list
+#' @inheritParams compute_auxiliary_trait_elbo
+#' @param current_loading_expectation A D'xL matrix of real values. The Loading
+#'   Expectation under the previous approximate posterior.
+#' @param loading_row_precision A LxLxD' array. The precision of each row of the
+#'   loading matrix under the approximate posterior distribution.
+#' @param precision_vector A D'-dimensional vector of positive real values. The
+#'   precision associated with each auxiliary trait,
+#' @param loading_row_conditional_mean_weight A D'x(D'-1) matrix of positive
+#'   real numbers. The weight of the remaining loading matrix in the conditional
+#'   mean of each row in the loading matrix.
+#'
+#' @return A D'xL matrix of real values. The Loading expectation under the
+#'   approximate posterior distribution.
+compute_loading_expectation <- function(
+  current_loading_expectation, loading_row_precision,
+  auxiliary_traits, latent_trait_expectation,
+  precision_vector,
+  ard_precision, scaled_conditional_row_variance_vector,
+  loading_row_conditional_mean_weight,
+  perform_checks = TRUE
+){
+  N <- nrow(auxiliary_traits)
+  D <- nrow(current_loading_expectation)
+  L <- ncol(current_loading_expectation)
+  if (perform_checks) {
+    checkmate::assert_matrix(
+      current_loading_expectation, mode = "numeric", any.missing = FALSE
+    )
+    checkmate::assert_array(
+      loading_row_precision, d = 3, mode = "numeric", any.missing = FALSE
+    )
+    checkmate::assert_set_equal(
+      dim(loading_row_precision), c(L, L, D)
+    )
+    checkmate::assert_matrix(
+      auxiliary_traits, ncols = D,
+      mode = "numeric", any.missing = FALSE
+    )
+    checkmate::assert_matrix(
+      latent_trait_expectation, nrows = N, ncols = L,
+      mode = "numeric", any.missing = FALSE
+    )
+    checkmate::assert_numeric(
+      precision_vector, lower = 0, any.missing = FALSE, len = D
+    )
+    checkmate::assert_numeric(
+      ard_precision, lower = 0, any.missing = FALSE, len = L
+    )
+    checkmate::assert_matrix(
+      loading_row_conditional_mean_weight, nrows = D, ncols = D-1,
+      mode = "numeric", any.missing = FALSE
+    )
+    checkmate::assert_numeric(
+      scaled_conditional_row_variance_vector, lower = 0, any.missing = FALSE, len = D
+    )
+  }
+  W <- current_loading_expectation
+  LXtZ <- t(auxiliary_traits %*% diag(precision_vector)) %*% latent_trait_expectation
+  for (i in 1:D) {
+    w_star <- c(t(loading_row_conditional_mean_weight[i, ]) %*% W[-i, ])
+    W[i, ] <- solve(
+      loading_row_precision[, , i],
+      LXtZ[i, ] + scaled_conditional_row_variance_vector[i] * ard_precision * w_star
+    )
+  }
+  W
 }
 
 #' Loading ELBO

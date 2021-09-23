@@ -14,6 +14,8 @@
 #' @param id_label Either a string or numeric indexing the variable in
 #'   \eqn{manifest_trait_df} identifying the taxon to which each observation
 #'   belongs.
+#' @param random_seed A single value, interpreted as an integer, or
+#'   NULL.
 #'
 #' @seealso specify_manifest_trait_metadata
 #'
@@ -31,7 +33,8 @@ initialise_plvm <- function(
   within_taxon_amplitude = NULL,
   heritable_amplitude = NULL,
   length_scale = 2,
-  perform_checks = TRUE
+  perform_checks = TRUE,
+  random_seed = NULL
 ){
   # Check Metadata and manifest traits
   metadata <- specify_manifest_trait_metadata(
@@ -54,6 +57,7 @@ initialise_plvm <- function(
       sort(unique(manifest_trait_df[, id_label]))
     )
   }
+  set.seed(random_seed)
   # Set Dimensions
   P <- nrow(metadata)
   N <- nrow(manifest_trait_df)
@@ -95,7 +99,12 @@ initialise_plvm <- function(
     ard_precision = ard_precision,
     perform_checks = perform_checks
   )
-  c_star <- compute_scaled_conditional_row_variance_vector(loading_prior_correlation)
+  c_star <- compute_scaled_conditional_row_variance_vector(
+    loading_prior_correlation
+    )
+  loading_row_conditional_mean_weight <- compute_loading_row_conditional_mean_weight_matrix(
+    loading_prior_correlation
+    )
   U_C_w <- chol(loading_prior_correlation)
   inv_C_w <- chol2inv(U_C_w)
   log_det_C_w <- 2 * sum(log(diag(U_C_w)))
@@ -103,7 +112,7 @@ initialise_plvm <- function(
     D_prime = D_prime, L = L,
     ard_precision = alpha,
     loading_prior_correlation = loading_prior_correlation,
-    loading = loading, method = method,
+    loading = loading, method = method, random_seed = random_seed,
     auxiliary_traits = X,
     perform_checks = perform_checks
   )
@@ -242,6 +251,7 @@ initialise_plvm <- function(
     precision_vector = lambda_vector,
     ard_precision = alpha,
     scaled_conditional_loading_row_variance_vector = c_star,
+    loading_row_conditional_mean_weight = loading_row_conditional_mean_weight,
     loading_prior_correlation = loading_prior_correlation,
     inv_loading_prior_correlation = inv_C_w,
     loading_prior_correlation_log_det = log_det_C_w,

@@ -11,6 +11,7 @@ initialise_loading(
   loading_prior_correlation,
   loading = NULL,
   method = "random",
+  random_seed = NULL,
   auxiliary_traits = NULL,
   perform_checks = TRUE
 )
@@ -31,6 +32,8 @@ non null checks that the loading matrix is of the correct type and size.}
 
 \item{method}{A string. Either \eqn{"random"} or \eqn{"pca"} indicating the
 type of initialisation adopted.}
+
+\item{random_seed}{A single value, interpreted as an integer, or NULL.}
 
 \item{auxiliary_traits}{An NxD' matrix of real numbers. The initial matrix of
 auxiliary traits. Only required when \eqn{method == "pca"}}

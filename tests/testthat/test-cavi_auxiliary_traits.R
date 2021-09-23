@@ -156,7 +156,7 @@ test_that("ordinal trait normalising constant", {
 
 })
 
-test_that("auxiliary variavle expectation",{
+test_that("auxiliary variable expectation",{
   set.seed(101)
   n <- 1e2
   K <- 10

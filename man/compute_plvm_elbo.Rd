@@ -17,7 +17,8 @@ compute_plvm_elbo(
 \item{n_samples}{A positive integer. The number of independent samples drawn
 to obtain the Monte Carlo estimate.}
 
-\item{random_seed}{A single value, interpreted as an integer, or NULL.}
+\item{random_seed}{A single value, interpreted as an integer, or
+NULL.}
 
 \item{perform_checks}{Logical. Check if function inputs are specified
 correctly.}

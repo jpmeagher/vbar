@@ -127,4 +127,52 @@ test_that("elbo is computed", {
       ),
     tolerance = 0.001
   )
+
+  elbo <- compute_plvm_elbo(
+    plvm_list = plvm,
+    n_samples = 1000, random_seed = 101,
+    perform_checks = TRUE
+  )
+
+  expect_equal(
+    elbo,
+    compute_auxiliary_trait_elbo(
+      manifest_trait_df = mt, metadata = meta,
+      auxiliary_traits = plvm$auxiliary_traits,
+      loading_expectation = plvm$loading_expectation,
+      latent_trait_expectation = plvm$individual_specific_latent_trait_expectation,
+      precision = plvm$precision,
+      loading_outer_expectation = plvm$loading_row_outer_product_expectation,
+      latent_trait_outer_expectation = plvm$individual_specific_latent_trait_outer_product_expectation,
+      n_samples = 1000, random_seed = 101,
+      perform_checks = TRUE
+    ) +
+      compute_loading_elbo(
+        loading_expectation = plvm$loading_expectation,
+        loading_row_covariance = plvm$loading_row_covariance,
+        ard_precision = plvm$ard_precision,
+        loading_prior_correlation_log_det = NULL,
+        inv_loading_prior_correlation = NULL,
+        loading_prior_correlation = plvm$loading_prior_correlation,
+        perform_checks = TRUE
+      ) +
+      compute_individual_specific_latent_trait_elbo(
+        individual_specific_latent_trait_expectation = plvm$individual_specific_latent_trait_expectation,
+        taxon_id = mt$taxon_id, phy = ph,
+        terminal_taxon_specific_latent_trait_expectation = plvm$taxon_specific_latent_trait_expectation[1:S,],
+        individual_specific_latent_trait_covariance = plvm$individual_specific_latent_trait_covariance,
+        individual_specific_latent_trait_outer_product_expectation = plvm$individual_specific_latent_trait_outer_product_expectation,
+        terminal_taxon_latent_trait_outer_product_expectation = plvm$taxon_specific_latent_trait_outer_product_expectation[, , 1:S],
+        within_taxon_amplitude = plvm$within_taxon_amplitude,
+        perform_checks = TRUE
+      ) +
+      compute_taxon_specific_latent_trait_elbo(
+        taxon_specific_latent_trait_expectation = plvm$taxon_specific_latent_trait_expectation,
+        taxon_specific_latent_trait_outer_product_expectation = plvm$taxon_specific_latent_trait_outer_product_expectation,
+        taxon_specific_latent_trait_covariance = plvm$taxon_specific_latent_trait_covariance,
+        phy = ph,
+        phylogenetic_gp = plvm$phylogenetic_GP,
+        perform_checks = TRUE
+      )
+  )
 })
