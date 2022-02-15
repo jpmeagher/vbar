@@ -659,3 +659,45 @@ compute_auxiliary_trait_elbo <- function(
   }
   sum(elbo)
 }
+
+#' Update Discrete Auxiliary Traits
+#'
+#' Update the auxiliary traits corresponding to discrete manifest traits given
+#' the CAVI aprroximate posterior over the loading and latent traits in the
+#' PLVM.
+#'
+#' @inheritParams compute_auxiliary_trait_elbo
+#'
+#' @return An NxD' Matrix of real values. The updated auxiliary traits.
+update_discrete_auxiliary_traits <- function(
+  manifest_trait_df, metadata,
+  auxiliary_traits,
+  loading_expectation, latent_trait_expectation,
+  n_samples = 1000, random_seed = NULL,
+  perform_checks = TRUE
+){
+  P <- nrow(metadata)
+  X <- auxiliary_traits
+  M <- latent_trait_expectation %*% t(loading_expectation)
+  for (i in 1:P) {
+    if (metadata$trait_type[i] == "ord") {
+      X[, metadata$auxiliary_trait_index[[i]]] <- ordinal_inverse_link(
+        y = manifest_trait_df[, metadata$manifest_trait_index[[i]]],
+        cut_off_points = metadata$cut_off_points[[i]],
+        mu = M[, metadata$auxiliary_trait_index[[i]]],
+        return_expectation = TRUE,
+        perform_checks = perform_checks
+      )
+    }
+    if(metadata$trait_type[i] == "nom") {
+      X[, metadata$auxiliary_trait_index[[i]]] <- nominal_inverse_link(
+        y = manifest_trait_df[, metadata$manifest_trait_index[[i]]],
+        mu = M[, metadata$auxiliary_trait_index[[i]]],
+        n_samples = n_samples, random_seed = random_seed,
+        return_expectation = TRUE,
+        perform_checks = perform_checks
+      )
+    }
+  }
+  X
+}

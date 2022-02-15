@@ -1,4 +1,4 @@
-test_that("cavi for plvm has been implemented", {
+test_that("precision updated", {
   P <- 4
   L <- 4
   tn <- c("ord", "nom", "con", "fvt")
@@ -78,15 +78,61 @@ test_that("cavi for plvm has been implemented", {
     length_scale = 2,
     perform_checks = TRUE)
 
-  cavi <- cavi_plvm(
-    plvm_list = plvm,
-    tol = 1e-1, max_iter = 10,
-    n_samples = 1000, random_seed = 202,
-    progress_bar = TRUE,
-    perform_checks = TRUE
+  lambda_updated <- update_precision(
+    precision = plvm$precision,
+    metadata = meta,
+    auxiliary_traits = plvm$auxiliary_traits,
+    loading_expectation = plvm$loading_expectation,
+    latent_trait_expectation = plvm$individual_specific_latent_trait_expectation,
+    loading_outer_expectation = plvm$loading_row_outer_product_expectation,
+    latent_trait_outer_expectation = plvm$individual_specific_latent_trait_outer_product_expectation
   )
 
-  plot(cavi$elbo)
-  # cavi[-1] %>% hist()
-  expect_true(TRUE)
+  expect_equal(
+    lambda_updated["ord"], 1, ignore_attr = T
+  )
+
+  expect_equal(
+    lambda_updated["nom"], 1, ignore_attr = T
+  )
+
+  ind <-  plvm$metadata$auxiliary_trait_index$con
+  a_con <- N * length(ind) / 2
+  b_con <- 0
+  for (i in 1:N) {
+    for (j in seq_along(ind)) {
+      b_con <- b_con + plvm$auxiliary_traits[i, ind[j]]^2 -
+        2 * plvm$auxiliary_traits[i, ind[j]] * (
+          t(plvm$loading_expectation[ind[j], ]) %*% plvm$individual_specific_latent_trait_expectation[i, ]
+        ) +
+        sum(diag(
+          plvm$loading_row_outer_product_expectation[, , ind[j]] %*%
+            plvm$individual_specific_latent_trait_outer_product_expectation[, , i]
+        ))
+    }
+  }
+  b_con <- b_con / 2
+  expect_equal(
+    lambda_updated["con"], (a_con - 1) / b_con, ignore_attr = T
+  )
+
+  ind <-  plvm$metadata$auxiliary_trait_index$fvt
+  a_fvt <- N * length(ind) / 2
+  b_fvt <- 0
+  for (i in 1:N) {
+    for (j in seq_along(ind)) {
+      b_fvt <- b_fvt + plvm$auxiliary_traits[i, ind[j]]^2 -
+        2 * plvm$auxiliary_traits[i, ind[j]] * (
+          t(plvm$loading_expectation[ind[j], ]) %*% plvm$individual_specific_latent_trait_expectation[i, ]
+        ) +
+        sum(diag(
+          plvm$loading_row_outer_product_expectation[, , ind[j]] %*%
+            plvm$individual_specific_latent_trait_outer_product_expectation[, , i]
+        ))
+    }
+  }
+  b_fvt <- b_fvt / 2
+  expect_equal(
+    lambda_updated["fvt"], (a_fvt - 1) / b_fvt, ignore_attr = T
+  )
 })

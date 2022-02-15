@@ -71,7 +71,7 @@ test_that("plvm initialised for cavi", {
     L = L,
     loading_prior_correlation = C_w,
     auxiliary_traits = NULL,
-    precision_prior_shape = 1, precision_prior_rate = 0.01,
+
     precision = NULL,
     ard_precision = NULL,
     ard_shape = 1, ard_rate = 1,
@@ -163,7 +163,6 @@ test_that("plvm initialised for cavi", {
       ard_precision = NULL,
       ard_shape = 1, ard_rate = 1,
       loading = NULL, method = "random",
-      precision_prior_shape = 1, precision_prior_rate = 0.01,
       precision = lambda,
       perform_checks = TRUE
     )$precision
@@ -174,12 +173,6 @@ test_that("plvm initialised for cavi", {
     )
   checkmate::expect_numeric(
     plvm$precision, len = P, lower = 0, any.missing = FALSE
-  )
-  checkmate::expect_number(
-    plvm$precision_prior_shape, lower = 0
-  )
-  checkmate::expect_number(
-    plvm$precision_prior_rate, lower = 0
   )
   checkmate::expect_numeric(
     plvm$ard_precision, len = L, lower = 0, any.missing = FALSE
@@ -262,7 +255,6 @@ test_that("plvm initialised for cavi", {
     loading_prior_correlation = C_w,
     random_seed = 101,
     auxiliary_traits = NULL,
-    precision_prior_shape = 1, precision_prior_rate = 0.01,
     precision = NULL,
     ard_precision = NULL,
     ard_shape = 1, ard_rate = 1,
@@ -279,7 +271,6 @@ test_that("plvm initialised for cavi", {
     loading_prior_correlation = C_w,
     random_seed = 101,
     auxiliary_traits = NULL,
-    precision_prior_shape = 1, precision_prior_rate = 0.01,
     precision = NULL,
     ard_precision = NULL,
     ard_shape = 1, ard_rate = 1,

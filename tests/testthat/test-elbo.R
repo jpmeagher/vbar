@@ -69,7 +69,6 @@ test_that("elbo is computed", {
     L = L,
     loading_prior_correlation = C_w,
     auxiliary_traits = NULL,
-    precision_prior_shape = 1, precision_prior_rate = 0.01,
     precision = NULL,
     ard_precision = NULL,
     ard_shape = 1, ard_rate = 1,

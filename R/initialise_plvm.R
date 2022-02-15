@@ -25,7 +25,6 @@ initialise_plvm <- function(
   manifest_trait_df, metadata, L, phy, id_label = "taxon_id",
   loading_prior_correlation,
   auxiliary_traits = NULL,
-  precision_prior_shape = 1, precision_prior_rate = 0.01,
   precision = NULL,
   ard_precision = NULL,
   ard_shape = 1, ard_rate = 1,
@@ -82,8 +81,8 @@ initialise_plvm <- function(
     n_traits = P,
     trait_names = metadata$trait_names,
     trait_type = metadata$trait_type,
-    precision_prior_shape = precision_prior_shape,
-    precision_prior_rate = precision_prior_rate,
+    precision_prior_shape = 1,
+    precision_prior_rate = 1,
     precision = precision,
     perform_checks = perform_checks
   )
@@ -246,8 +245,6 @@ initialise_plvm <- function(
     phy = phy, id_label = id_label,
     auxiliary_traits = X,
     precision = lambda,
-    precision_prior_shape = precision_prior_shape,
-    precision_prior_rate = precision_prior_rate,
     precision_vector = lambda_vector,
     ard_precision = alpha,
     scaled_conditional_loading_row_variance_vector = c_star,
