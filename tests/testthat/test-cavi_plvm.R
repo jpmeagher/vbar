@@ -72,21 +72,20 @@ test_that("cavi for plvm has been implemented", {
     precision = NULL,
     ard_precision = NULL,
     ard_shape = 1, ard_rate = 1,
-    loading = NULL, method = "random",
+    loading = NULL, method = "varimax",
     within_taxon_amplitude = NULL,
     heritable_amplitude = NULL,
     length_scale = 2,
     perform_checks = TRUE)
 
+  iter <- 10
   cavi <- cavi_plvm(
     plvm_list = plvm,
-    tol = 1e-1, max_iter = 10,
+    tol = 1e-1, max_iter = iter,
     n_samples = 1000, random_seed = 202,
     progress_bar = TRUE,
     perform_checks = TRUE
   )
 
-  plot(cavi$elbo)
-  # cavi[-1] %>% hist()
-  expect_true(TRUE)
+  expect_true(all(diff(cavi$elbo) > 0))
 })

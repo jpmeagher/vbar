@@ -1,3 +1,22 @@
+test_that("individual specific latent trait initialisation", {
+  N <- 100
+  D <- 15
+  L <- 4
+  W <- array(rnorm(D*L), c(D, L))
+  lambda <- 10000
+
+  Z <- matrix(rnorm(L * N), N, L)
+  X <- Z %*% t(W) + matrix(rnorm(D * N, sd = sqrt(1 / lambda)), N, D)
+
+  init_Z <- initialise_individual_specific_latent_traits(
+    auxiliary_traits = X,
+    loading = W,
+    precision = lambda
+  )
+
+  checkmate::expect_matrix(init_Z, mode = "numeric", nrows = N, ncols = L)
+})
+
 test_that("individual specific latent trait precision", {
   D <- 15
   L <- 4

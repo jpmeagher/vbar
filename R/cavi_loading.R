@@ -40,17 +40,9 @@ initialise_loading <- function(
       auxiliary_traits, ncols = D_prime,
       mode = "numeric", any.missing = FALSE, null.ok = TRUE
     )
-    checkmate::assert_choice(method, choices = c("pca", "random"))
+    checkmate::assert_choice(method, choices = c("pca", "random", "varimax"))
   }
   if (!is.null(loading)) return(loading)
-  if (method == "pca") {
-    if (is.null(auxiliary_traits)) {
-      stop("Auxiliary traits required to initialise PLVM at principal components")
-    }
-    pca <- stats::prcomp(auxiliary_traits)
-    W_star <- pca$rotation[, 1:L]
-    W <- sweep(W_star, 2, pca$sdev[1:L], "*")
-  }
   if (method == "random") {
     set.seed(random_seed)
     sigma <- sqrt(1 / ard_precision)
@@ -58,6 +50,20 @@ initialise_loading <- function(
     Z <- matrix(stats::rnorm(D_prime * L), nrow = D_prime, ncol = L)
     W_star <- L_chol %*% Z
     W <- sweep(W_star, 2, sigma, "*")
+  } else {
+    if (is.null(auxiliary_traits)) {
+      stop("Auxiliary traits required to initialise PLVM from principal components")
+    }
+    pca <- stats::prcomp(auxiliary_traits)
+    W_star <- pca$rotation[, 1:L]
+    W_tmp <- sweep(W_star, 2, pca$sdev[1:L], "*")
+    if (method == "pca") {
+      W <- W_tmp
+    }
+    if (method == "varimax") {
+      vari <- stats::varimax(W_tmp)
+      W <- vari$loadings
+    }
   }
   W
 }
@@ -326,7 +332,7 @@ compute_loading_expectation <- function(
     w_star <- c(t(loading_row_conditional_mean_weight[i, ]) %*% W[-i, ])
     W[i, ] <- solve(
       loading_row_precision[, , i],
-      LXtZ[i, ] + scaled_conditional_row_variance_vector[i] * ard_precision * w_star
+      LXtZ[i, ] +  (ard_precision / scaled_conditional_row_variance_vector[i]) * w_star
     )
   }
   W

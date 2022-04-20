@@ -578,7 +578,7 @@ compute_continuous_auxiliary_trait_elbo <- function(
   }
   if (D == 1) loading_expectation = t(loading_expectation)
   A1 <- - N * D * log(2 * pi) / 2
-  A2 <- - N * D * log(precision) / 2
+  A2 <- N * D * log(precision) / 2
   A3.1 <- sum(diag(t(X) %*% X))
   A3.2 <- - 2 * sum(diag(t(X) %*% (latent_trait_expectation %*% t(loading_expectation))))
   A3.3 <- sum(diag(

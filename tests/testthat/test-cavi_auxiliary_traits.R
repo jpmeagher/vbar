@@ -116,11 +116,11 @@ test_that("nominal trait normalising constant", {
 })
 
 test_that("ordinal trait normalising constant", {
-  gamma <- c(-Inf, 0, sort(runif(2)), Inf)
+  gamma <- c(-Inf, 0, 0.5, 1, Inf)
   K <- length(gamma) - 1
-  N <- 100
-  mu <- rnorm(N, sd = 0.25)
-  X <- rnorm(N, mean  = mu)
+  N <- 1000
+  mu <- rep(0.5, N)
+  X <- rnorm(N, mean = mu, sd = 0.5)
   y <- sapply(X, function(x) sum(x > gamma))
   expect_true(
     all(X > gamma[y] & X < gamma[y+1])
@@ -518,7 +518,7 @@ test_that("Continuous auxiliary trait elbo computed", {
       loading_outer_expectation = w_outer, latent_trait_outer_expectation = Z_outer,
       perform_checks = TRUE
     ),
-    - (0.5 * N * log( 2 * pi)) - (0.5 * N * log(lambda)) -
+    - (0.5 * N * log( 2 * pi)) + (0.5 * N * log(lambda)) -
       (lambda * (sum(X^2) - (2 * c(t(X) %*% M)) + M_2_ex) / 2)
   )
 
@@ -547,7 +547,7 @@ test_that("Continuous auxiliary trait elbo computed", {
       loading_outer_expectation = w_outer, latent_trait_outer_expectation = Z_outer,
       perform_checks = TRUE
     ),
-    - (0.5 * N * D_p * log( 2 * pi)) - (0.5 * N * D_p * log(lambda)) -
+    - (0.5 * N * D_p * log( 2 * pi)) + (0.5 * N * D_p * log(lambda)) -
       (lambda * (sum(X^2) - (2 * sum(diag(t(X) %*% M))) + M_2_ex) / 2)
   )
 })

@@ -1,3 +1,43 @@
+#' Initialise the Individual-specific latent traits
+#'
+#' Initialises individual specific latent traits given the auxiliary traits, a
+#' set of loadings, and a vector of precision parameters associated with each
+#' multivariate trait.
+#'
+#' @inheritParams compute_individual_specific_latent_trait_expectation
+#' @param auxiliary_traits An NxD' matrix of real numbers. The initial matrix of
+#'   auxiliary traits.
+#' @param precision A positive real valued scalar. A precision value allowing the
+#'   latent variables to be initialised. Larger imply that auxiliary traits are
+#'   more precisely observed.
+#'
+#' @return An NxL dimensional matrix of real-valued latent traits.
+initialise_individual_specific_latent_traits <- function(
+  auxiliary_traits,
+  loading,
+  precision = 1,
+  perform_checks = TRUE
+){
+  D <- ncol(auxiliary_traits)
+  N <- nrow(auxiliary_traits)
+  L <- ncol(loading)
+  if (perform_checks) {
+    checkmate::assert_matrix(
+      auxiliary_traits, mode = "numeric",
+      nrows = N, ncols = D, any.missing = FALSE
+    )
+    checkmate::assert_matrix(
+      loading, mode = "numeric",
+      nrows = D, ncols = L, any.missing = FALSE
+    )
+  }
+  M_inv <- chol2inv(chol(t(loading) %*% loading + (1 / precision) * diag(L)))
+  Z <- auxiliary_traits %*% (loading %*% M_inv)
+  Z
+}
+
+
+
 #' Compute Individual-specific Latent Trait Precision
 #'
 #' Computes the precision matrix for the approximate posterior distribution of
@@ -492,3 +532,38 @@ compute_taxon_specific_latent_trait_elbo <- function(
   A1 + A2 + A3 + A4
 }
 
+
+compute_latent_trait_elbo <- function(
+  individual_specific_latent_trait_expectation,
+  taxon_id, phy,
+  terminal_taxon_specific_latent_trait_expectation,
+  individual_specific_latent_trait_covariance,
+  individual_specific_latent_trait_outer_product_expectation,
+  terminal_taxon_latent_trait_outer_product_expectation,
+  taxon_specific_latent_trait_expectation,
+  taxon_specific_latent_trait_outer_product_expectation,
+  taxon_specific_latent_trait_covariance,
+  phylogenetic_gp,
+  within_taxon_amplitude,
+  perform_checks = TRUE
+){
+  elbo <- compute_individual_specific_latent_trait_elbo(
+    individual_specific_latent_trait_expectation = individual_specific_latent_trait_expectation,
+    taxon_id = taxon_id, phy = phy,
+    terminal_taxon_specific_latent_trait_expectation = terminal_taxon_specific_latent_trait_expectation,
+    individual_specific_latent_trait_covariance = individual_specific_latent_trait_covariance,
+    individual_specific_latent_trait_outer_product_expectation = individual_specific_latent_trait_outer_product_expectation,
+    terminal_taxon_latent_trait_outer_product_expectation = terminal_taxon_latent_trait_outer_product_expectation,
+    within_taxon_amplitude = within_taxon_amplitude,
+    perform_checks = perform_checks
+  ) +
+    compute_taxon_specific_latent_trait_elbo(
+      taxon_specific_latent_trait_expectation = taxon_specific_latent_trait_expectation,
+      taxon_specific_latent_trait_outer_product_expectation = taxon_specific_latent_trait_outer_product_expectation,
+      taxon_specific_latent_trait_covariance = taxon_specific_latent_trait_covariance,
+      phy = phy,
+      phylogenetic_gp = phylogenetic_gp,
+      perform_checks = perform_checks
+    )
+  elbo
+}

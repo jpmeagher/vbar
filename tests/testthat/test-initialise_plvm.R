@@ -249,6 +249,16 @@ test_that("plvm initialised for cavi", {
     dim(plvm$taxon_specific_latent_trait_outer_product_expectation), c(L, L, S + ph$Nnode)
   )
 
+  for (i in 1:L) {
+    checkmate::expect_set_equal(
+      plvm$loading_col_outer_product_expectation[, , i],
+      gaussian_outer_product_expectation(
+        expected_value = plvm$loading_expectation[, i],
+        covariance_matrix = diag(plvm$loading_row_covariance[i, i, ])
+      )
+    )
+  }
+
   plvm1 <- initialise_plvm(
     manifest_trait_df = mt, metadata = meta, phy = ph,
     L = L,

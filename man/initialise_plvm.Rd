@@ -12,14 +12,12 @@ initialise_plvm(
   id_label = "taxon_id",
   loading_prior_correlation,
   auxiliary_traits = NULL,
-  precision_prior_shape = 1,
-  precision_prior_rate = 0.01,
   precision = NULL,
-  ard_precision = NULL,
+  ard_precision = rep(1, L),
   ard_shape = 1,
   ard_rate = 1,
   loading = NULL,
-  method = "random",
+  method = "varimax",
   within_taxon_amplitude = NULL,
   heritable_amplitude = NULL,
   length_scale = 2,
@@ -49,12 +47,6 @@ within loadings under the Gaussian prior.}
 \item{auxiliary_traits}{An NxD' matrix of real numbers. The initial matrix of
 auxiliary traits. When non null checks that the auxiliary trait matrix is
 of the correct type and size.}
-
-\item{precision_prior_shape}{A positive real-valued scalar. The shape of the
-Gamma prior on the precision.}
-
-\item{precision_prior_rate}{A positive real-valued scalar. The rate of the
-Gamma prior on the precision.}
 
 \item{precision}{A vector length \eqn{n_traits} taking positive real values.
 The Precision with which auxiliary traits are observed. Precision

@@ -103,6 +103,20 @@ test_that("Loading initialisation works", {
     W,
     sweep(pca$rotation[, 1:L], 2, pca$sdev[1:L], "*")
   )
+
+  W <- initialise_loading(
+    D_prime = D_p, L = L,
+    ard_precision = alpha, loading_prior_correlation = C_w,
+    loading = NULL, method = "varimax",
+    auxiliary_traits = X,
+    perform_checks = TRUE
+  )
+
+  vari <- varimax(sweep(pca$rotation[, 1:L], 2, pca$sdev[1:L], "*"))
+  expect_equal(
+    W,
+    vari$loadings
+  )
 })
 
 test_that("ARD precision initialises", {
@@ -141,6 +155,7 @@ test_that("Conditional Correlation", {
   d <- abs(outer(x, x, "-"))
   ell <- 1 / (2 * pi)
   C_w[ind_at[[4]], ind_at[[4]]] <-  (exp_quad_kernel(d, 1, ell) + (1e-6 * diag(length(ind_at[[4]])))) / (1 + 1e-6)
+
 
   c_star <- compute_scaled_conditional_row_variance_vector(C_w)
   i <- 10
@@ -222,7 +237,7 @@ test_that("Loading row precision", {
       scaled_conditional_row_variance = c_star[i],
       perform_checks = TRUE
     ),
-    (lambda_vector[i] * ZTZ)+ (diag(alpha) / c_star[i])
+    (lambda_vector[i] * ZTZ) + (diag(alpha) / c_star[i])
     )
   }
 })
@@ -365,23 +380,40 @@ test_that("Loading expectation", {
   ph <- vbar::synthetic_trait_model_specification$phylogeny
   S <- length(ph$tip.label)
 
+  tmp_X <- initialise_auxiliary_traits(
+    n_traits = nrow(meta),
+    manifest_trait_df = mt,
+    trait_names = meta$trait_names,
+    trait_type = meta$trait_type,
+    trait_levels = meta$trait_levels,
+    manifest_trait_index = meta$manifest_trait_index,
+    auxiliary_trait_index = meta$auxiliary_trait_index,
+    inverse_link_functions = meta$inverse_link_functions,
+    auxiliary_traits = NULL,
+    perform_checks = T
+  )
+  tmp_pca <- prcomp(tmp_X)
+  tmp_vari <- varimax(sweep(tmp_pca$rotation[, 1:L], 2, tmp_pca$sdev[1:L], "*"))
+
+  tmp_W <- tmp_vari$loadings
+  tmp_Z <- sweep(tmp_pca$x[, 1:L], 2, tmp_pca$sdev[1:L], "/") %*% tmp_vari$rotmat
+
+
   plvm <- initialise_plvm(
     manifest_trait_df = mt, metadata = meta, phy = ph,
     L = L,
     loading_prior_correlation = C_w,
-    auxiliary_traits = NULL,
+    auxiliary_traits = tmp_X,
     precision = NULL,
     ard_precision = NULL,
     ard_shape = 1, ard_rate = 1,
-    loading = NULL, method = "random",
+    loading = NULL, method = "varimax",
     within_taxon_amplitude = NULL,
     heritable_amplitude = NULL,
     length_scale = 2,
-    perform_checks = TRUE
-  )
+    perform_checks = TRUE)
 
   W_tmp <- plvm$loading_expectation
-
   W_up <- compute_loading_expectation(
     current_loading_expectation = plvm$loading_expectation,
     loading_row_precision = plvm$loading_row_precision,
@@ -393,21 +425,21 @@ test_that("Loading expectation", {
     loading_row_conditional_mean_weight = plvm$loading_row_conditional_mean_weight,
     perform_checks = TRUE
   )
-  i <- 1
+
+  w_star_tmp <- matrix(NA, D_p, L)
   for (i in 1:D_p) {
     w_star <- c(C_w[i, -i] %*% solve(C_w[-i, -i]) %*% W_tmp[-i, ])
+    w_star_tmp[i, ] <- w_star
     lxz <- c(plvm$precision_vector[i] *
       t(plvm$auxiliary_traits[, i]) %*%
       plvm$individual_specific_latent_trait_expectation)
     W_tmp[i, ] <- plvm$loading_row_covariance[,, i] %*% (
-      lxz +
-        (plvm$scaled_conditional_loading_row_variance_vector[i] *
-           plvm$ard_precision + w_star)
+      lxz + (plvm$ard_precision / plvm$scaled_conditional_loading_row_variance_vector[i]) * w_star
     )
   }
 
   expect_equal(
-    W_tmp, W_tmp
+    W_up, W_tmp
   )
 })
 
