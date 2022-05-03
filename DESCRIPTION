@@ -20,6 +20,7 @@ Imports:
     checkmate,
     magrittr,
     matrixcalc,
+    mvnfast,
     phangorn,
     phytools,
     RcppTN,

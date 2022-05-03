@@ -115,7 +115,8 @@ test_that("Loading initialisation works", {
   vari <- varimax(sweep(pca$rotation[, 1:L], 2, pca$sdev[1:L], "*"))
   expect_equal(
     W,
-    vari$loadings
+    vari$loadings,
+    ignore_attr = TRUE
   )
 })
 

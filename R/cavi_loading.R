@@ -63,6 +63,8 @@ initialise_loading <- function(
     if (method == "varimax") {
       vari <- stats::varimax(W_tmp)
       W <- vari$loadings
+      attributes(W) <- NULL
+      W <- matrix(W, ncol = L)
     }
   }
   W
