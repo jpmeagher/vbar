@@ -43,3 +43,12 @@
 #'    Cut-off points for the ordinal trait mapping}
 #'}
 "synthetic_trait_model_specification"
+
+#' Bat Phylogeny
+#'
+#' A phylogenetic tree for 22 species of Mexican bat transcribed from the
+#' Maximum a posteriori phylogeny inferred by Amador et al. (2018) (see link
+#' below).
+#'
+#' @source{https://link.springer.com/article/10.1007/s10914-016-9363-8}
+"bat_phylogeny"
