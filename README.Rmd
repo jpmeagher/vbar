@@ -512,22 +512,38 @@ Our objective is to infer a posterior distribution over individual-specific auxi
 That is
 $$
 \begin{aligned}
-p \left( \boldsymbol X, \boldsymbol W, \boldsymbol Z, \boldsymbol F \mid \boldsymbol Y, \mathcal T, \boldsymbol \psi \right) &\propto p \left(\boldsymbol Y \mid \boldsymbol X, \boldsymbol \gamma \right) p \left( \boldsymbol X \mid \boldsymbol W, \boldsymbol Z, \boldsymbol \lambda \right) p \left( \boldsymbol Z \mid \boldsymbol F, \boldsymbol \tau \right) p \left( \boldsymbol F \mid \boldsymbol h \right) p \left( \boldsymbol W \mid \boldsymbol \alpha \right) p \left( \boldsymbol \lambda \mid a_\lambda, b_\lambda \right), \\
-&= \left( \prod_{n = 1}^N p \left(\boldsymbol y_n \mid \boldsymbol x_n \right) p \left( \boldsymbol x_n \mid \boldsymbol W, \boldsymbol z_n, \boldsymbol \lambda \right) \right) 
+p \left( \boldsymbol X, \boldsymbol W, \boldsymbol Z, \boldsymbol F \mid \boldsymbol Y, \mathcal T, \boldsymbol \psi \right) &\propto p \left(\boldsymbol Y \mid \boldsymbol X, \boldsymbol \gamma \right) p \left( \boldsymbol X \mid \boldsymbol W, \boldsymbol Z, \boldsymbol \lambda \right) p \left( \boldsymbol Z \mid \boldsymbol F, \boldsymbol \tau \right) p \left( \boldsymbol F \mid \boldsymbol h \right) p \left( \boldsymbol W \mid \boldsymbol \alpha \right) p \left( \boldsymbol \lambda \mid a_\lambda, b_\lambda \right),
+\end{aligned}
+$$
+which can be expressed as
+$$
+\begin{aligned}
+p \left( \boldsymbol X, \boldsymbol W, \boldsymbol Z, \boldsymbol F \mid \boldsymbol Y, \mathcal T, \boldsymbol \psi \right) 
+&\propto \left( \prod_{n = 1}^N p \left(\boldsymbol y_n \mid \boldsymbol x_n \right) p \left( \boldsymbol x_n \mid \boldsymbol W, \boldsymbol z_n, \boldsymbol \lambda \right) \right) 
 \left( \prod_{s = 1}^S \prod_{n = 1}^{N_s} p \left( \boldsymbol z_{sn} \mid \boldsymbol f_s, \boldsymbol \tau \right) \right) \\
 &\left( \prod_{s = 1}^{2S - 2} p \left( \boldsymbol f_s \mid \boldsymbol f_{\operatorname{pa} \left( s \right)}, \boldsymbol h \right) p \left( \boldsymbol f_{2S - 1} \mid \boldsymbol h \right) \right) 
  \prod_{l = 1}^L p \left( \boldsymbol w_l \mid \alpha_l, \boldsymbol C_w \right) \prod_{p = 1}^{P} p \left( \lambda_p \mid a_\lambda, b_\lambda \right), 
 \end{aligned}
 $$
 where we have introduced the notation $\boldsymbol Y = \left( \boldsymbol y_{11}, \dots, \boldsymbol y_{1N_1}, \dots, \boldsymbol y_{S1}, \dots, \boldsymbol y_{SN_S} \right)^\top = \left( \boldsymbol y_1, \dots, \boldsymbol y_N \right)^\top$ for $N = \sum_{s = 1}^S N_s$ which suppresses the index $s$, $\boldsymbol X$ and $\boldsymbol Z$ have analogous definitions, and $\boldsymbol \psi = \left\{\boldsymbol \gamma, \boldsymbol \tau, \boldsymbol h, \boldsymbol \alpha, \boldsymbol C_w, a_\lambda, b_\lambda \right\}$ model hyperparameters. $\boldsymbol z_{sn}$ and $\boldsymbol z_n$ are used interchangeably as is most convenient.
-This hierarchical model is defined by 
+This hierarchical model is defined by the distributions over manifest and auxiliary variables
 $$
 \begin{aligned}
 \boldsymbol y_n \mid \boldsymbol x_n, \boldsymbol \gamma  &= g \left( \boldsymbol x_n \right), \\
 \boldsymbol x_n \mid \boldsymbol W, \boldsymbol z_n, \boldsymbol \lambda &\sim \mathcal N \left( \boldsymbol W \boldsymbol z_n, \Lambda^{-1}\right), \\
+\end{aligned}
+$$
+latent variables
+$$
+\begin{aligned}
 \boldsymbol z_{sn} \mid \boldsymbol f_s, \boldsymbol \tau  &\sim \mathcal N \left(\left( \boldsymbol I_L - \Sigma_\tau \right)^{1/2} \boldsymbol f_s, \Sigma_\tau\right), \\
 \boldsymbol f_s \mid \boldsymbol f_{\operatorname{pa} \left( s \right)}, \boldsymbol h &\sim \mathcal N \left( \operatorname{diag} \left( \boldsymbol \nu_s\right) \boldsymbol f_{\operatorname{pa} \left( s \right)}, \Sigma_{\eta, s} \right), \\
-\boldsymbol f_{2S - 1} \mid \boldsymbol h &\sim \mathcal N \left( \boldsymbol 0, \Sigma_h \right), \\
+\boldsymbol f_{2S - 1} \mid \boldsymbol h &\sim \mathcal N \left( \boldsymbol 0, \Sigma_h \right), 
+\end{aligned}
+$$
+and parameters
+$$
+\begin{aligned}
 \boldsymbol w_q \mid \boldsymbol \alpha, \boldsymbol C_w &\sim \mathcal N \left( \boldsymbol 0, \alpha_l^{-1} \boldsymbol C_w \right), \\
 \lambda_p &\sim
 \begin{cases}
@@ -536,6 +552,7 @@ $$
 \end{cases}
 \end{aligned}
 $$
+
 where $\Sigma_{\tau}$ is the diagonal covariance matrix parametrised by $\left( \tau_1^2, \dots, \tau_L^2\right)^\top$, $\Sigma_{\eta, }$ is the diagonal covariance matrix parametrised by $\left( \tau_1^2, \dots, \tau_L^2\right)^\top$.
 
 A Co-ordinate Ascent Variational Inference (CAVI) algorithm allows approximate Bayesian Inference for this model. To implement this inference scheme we use the `vbar` package.
@@ -636,12 +653,12 @@ plvm <- initialise_plvm(
 
 This is the minimum required specification for `vbar` to initialise a PLVM. By default, auxiliary traits are sampled at random given the initial ordinal trait cut-off points and discrete manifest traits. Varimax analysis of the resulting auxiliary traits provide sensible initial values for the PLVM Loading. All the remaining parameters and latent variables are then sampled at random.
 
-Given an initial PLVM, we can implement CAVI using the `cavi_plvm` function. In the interest of brevity, the CAVI algorithm is run for 100 iterations only. For empirical data problems we would iterate to convergence of the ELBO, defined by `tol`.
+Given an initial PLVM, we can implement CAVI using the `cavi_plvm` function. In the interest of brevity, the CAVI algorithm is run for 10 iterations only. For empirical data problems we would iterate to convergence of the ELBO, defined by `tol`.
 
 ```{r run_cavi}
 cavi <- cavi_plvm(
   plvm_list = plvm,
-  tol = 1e-1, max_iter = 100,
+  tol = 1e-1, max_iter = 10,
   n_samples = 1000, random_seed = 202,
   progress_bar = TRUE,
   perform_checks = FALSE
@@ -650,11 +667,11 @@ cavi <- cavi_plvm(
 
 We can compare the output from the CAVI for the PLVM with the known parameters of the generative model. 
 
-First, we verify that the CAVI algorithm is maximising the ELBO. The figure omits the ELBO at the first 10 iterations of the CAVI for clarity.
+First, we verify that the CAVI algorithm is maximising the ELBO. The figure omits the ELBO at the first 5 iterations of the CAVI for clarity.
 
 ```{r plot_elbo, fig.height=3, fig.width=7, echo = FALSE}
 data.frame(iter = seq_along(cavi$elbo)-1,  elbo = cavi$elbo) %>% 
-  filter(iter > 10) %>% 
+  filter(iter > 5) %>% 
   ggplot() +
   geom_point(
     aes(x = iter, y = elbo)
