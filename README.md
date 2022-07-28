@@ -22,6 +22,10 @@ generated from the PLVM. Approximate Bayesian Inference for this
 synthetic data set, which is included with the package, demonstrates how
 the `vbar` package is applied for Ancestral Reconstruction.
 
+For the code required to fit the generalised PLVM to data, skip to the
+section on [Approximate Bayesian
+Inference](#approximate-bayesian-inference)
+
 ## Installation
 
 You can install the development version from

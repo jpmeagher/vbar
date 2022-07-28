@@ -24,6 +24,8 @@ The goal of `vbar` is to implement Variational Bayes Ancestral Reconstruction fo
 
 This readme is laid out as follows: after presenting code installing the `vbar` package, the Generalised Phylogenetic Latent Variable Model (PLVM) for trait evolution is outlined. In order to illustrate more clearly the assumptions underpinning this model, a synthetic data set is generated from the PLVM. Approximate Bayesian Inference for this synthetic data set, which is included with the package, demonstrates how the `vbar` package is applied for Ancestral Reconstruction.
 
+For the code required to fit the generalised PLVM to data, skip to the section on [Approximate Bayesian Inference](#approximate-bayesian-inference)
+
 ## Installation
 
 You can install the development version from [GitHub](https://github.com/) with:
