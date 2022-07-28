@@ -11,6 +11,7 @@ variational_ancestral_reconstruction(
   precision_vector,
   metadata,
   n_samples = 1000,
+  probs = c(0.025, 0.975),
   perform_checks = TRUE
 )
 }
@@ -35,6 +36,9 @@ of manifest traits to the PLVM auxiliary traits..}
 \item{n_samples}{A positive integer. The number of samples drawn to construct
 a Monte-Carlo approximation to the approximate posterior distribution of
 nominal traits.}
+
+\item{probs}{A numeric vector of values on the unit interval. The desired
+quantiles for continuous manifest traits.}
 
 \item{perform_checks}{Logical. Check if function inputs are specified
 correctly.}

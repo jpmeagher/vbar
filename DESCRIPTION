@@ -25,6 +25,6 @@ Imports:
     phytools,
     RcppTN,
     testthat
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.0
 Depends: 
     R (>= 2.10)

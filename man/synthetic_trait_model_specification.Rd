@@ -14,6 +14,8 @@ A list of length 9:
    \item{loading}{A named 37x4 matrix of real numbers}
    \item{auxiliary_trait_precision}{A 4-dimensional vector of positive real
    numbers. Precision with which auxiliary traits are observed.}
+   \item{auxiliary_trait_precision_vec}{A D'-dimensional vector of positive real
+   numbers. Precision for each auxiliary trait.}
    \item{individual_specific_latent_traits}{A 384x3 matrix of real numbers.
    The latent trait associated with each observed manifest trait.}
    \item{taxon_specific_latent_traits}{A 255x3 matrix of real numbers.

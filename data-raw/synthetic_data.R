@@ -1,6 +1,6 @@
 S <- 2^7
 set.seed(98)
-phy <- rcoal(S) %>%
+phy <- ape::rcoal(S) %>%
   scale_phylo(max_dist = 1)
 
 ## Model Specification
@@ -13,7 +13,7 @@ K_nom <- 3
 
 ## Set Loading
 
-auxiliary_trait_precision <- c(1, 1, 10, 10000)
+auxiliary_trait_precision <- c(ord = 1, nom = 1, con = 10, fvt = 10000)
 L <- 3
 # FVT Loading
 D_fvt <- 2^5
@@ -111,13 +111,14 @@ synthetic_traits$fvt <- lapply(1:N, function(n) exp(unname(auxiliary_traits[n, a
 usethis::use_data(synthetic_traits, overwrite = TRUE)
 
 synthetic_trait_model_specification <- list(
-  phylogeny = synthetic_phylogeny,
+  phylogeny = phy,
   auxiliary_traits = auxiliary_traits,
   loading = loading,
   auxiliary_trait_precision = auxiliary_trait_precision,
+  auxiliary_trait_precision_vec = auxiliary_trait_precision_vec,
   individual_specific_latent_traits = individual_specific_latent_traits,
   taxon_specific_latent_traits = taxon_specific_latent_traits,
-  witin_taxon_sd = tau,
+  within_taxon_sd = tau,
   heritability = h,
   ordinal_trait_cut_off = cut_off_points
 )

@@ -87,7 +87,44 @@ test_that("ancestral reconstruction behaves", {
     perform_checks = FALSE
   )
 
-  s <- 129
+  # ## Match truth to CAVI Loadings
+  # R_mat <- IMIFA::Procrustes(
+  #   synthetic_trait_model_specification$loading,
+  #   cavi$model$loading_expectation,
+  # )$R %>% round()
+  #
+  # matplot(synthetic_trait_model_specification$loading)
+  # matplot(cavi$model$loading_expectation %*% R_mat)
+  #
+  # synthetic_trait_model_specification$individual_specific_latent_traits[, 1]
+  # (cavi$model$individual_specific_latent_trait_expectation %*% R_mat)[, 1]
+  #
+  # plot(
+  #   synthetic_trait_model_specification$individual_specific_latent_traits[, 3],
+  #   (cavi$model$individual_specific_latent_trait_expectation %*% R_mat)[, 3]
+  # )
+  #
+  # ## Check correlation between individual latent traits and true values
+  # i <- 3
+  # mod <- lm( synthetic_trait_model_specification$individual_specific_latent_traits[, i] ~
+  #       (cavi$model$individual_specific_latent_trait_expectation %*% R_mat)[, i] )
+  # summary(mod)
+  # cor(synthetic_trait_model_specification$individual_specific_latent_traits[, i],
+  #       (cavi$model$individual_specific_latent_trait_expectation %*% R_mat)[, i] )
+  #
+  # ## Check correlation between taxon latent traits and true values
+  # i <- 3
+  # plot(synthetic_trait_model_specification$taxon_specific_latent_traits[, i],
+  #      (cavi$model$taxon_specific_latent_trait_expectation %*% R_mat)[, i])
+  # mod <- lm( synthetic_trait_model_specification$taxon_specific_latent_traits[, i] ~
+  #              (cavi$model$taxon_specific_latent_trait_expectation %*% R_mat)[, i] )
+  # summary(mod)
+  # cor(synthetic_trait_model_specification$taxon_specific_latent_traits[, i],
+  #     (cavi$model$taxon_specific_latent_trait_expectation %*% R_mat)[, i])
+  #
+  # ## Loadings and latent traits look pretty good, so let's look at the ancestral reconstruction
+
+  s <- 1
   ar <- variational_ancestral_reconstruction(
     taxon_specific_latent_trait_expectation = cavi$model$taxon_specific_latent_trait_expectation[s, ],
     taxon_specific_latent_trait_covariance = cavi$model$taxon_specific_latent_trait_covariance[s, ],

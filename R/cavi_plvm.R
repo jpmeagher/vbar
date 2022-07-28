@@ -12,7 +12,8 @@
 #'
 #' @seealso initialise_plvm
 #'
-#' @return The optimised PLVM and ELBO at each iteration,
+#' @return The optimised PLVM and ELBO at each iteration.
+#' @export
 cavi_plvm <- function(
   plvm_list,
   tol = 1e-6, max_iter = 1000,

@@ -31,7 +31,7 @@ cavi_plvm(
 correctly.}
 }
 \value{
-The optimised PLVM and ELBO at each iteration,
+The optimised PLVM and ELBO at each iteration.
 }
 \description{
 Coordinate Ascent Variational Inference for the Phylogenetic Latent Variable Model

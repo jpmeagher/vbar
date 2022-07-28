@@ -184,19 +184,6 @@ initialise_plvm <- function(
     perform_checks = perform_checks
   )
   inv_lambda_Z <- chol2inv(chol(lambda_Z))
-  # Z <- t(sapply(
-  #   1:N, function(i) {
-  #     compute_individual_specific_latent_trait_expectation(
-  #       auxiliary_trait = X[i, ],
-  #       loading = W,
-  #       taxon_specific_latent_trait = stats::rnorm(L, sd = heritable_amplitude),
-  #       precision_vector = lambda_vector,
-  #       individual_specific_latent_trait_precision = lambda_Z,
-  #       within_taxon_amplitude = within_taxon_amplitude,
-  #       perform_checks = perform_checks
-  #     )
-  #   }
-  # ))
   outer_Z_list <- lapply(
     1:N,
     function(i){
@@ -218,15 +205,6 @@ initialise_plvm <- function(
       conditional_standard_deviation = phylogenetic_GP[i, "sd", ],
       perform_checks = perform_checks
     )
-    # f[i, ] <- compute_terminal_taxon_specific_latent_trait_expectation(
-    #   individual_specific_latent_traits = Z[manifest_trait_df[, id_label] == phy$tip.label[i], ],
-    #   within_taxon_amplitude = within_taxon_amplitude,
-    #   parent_taxon_latent_trait = stats::rnorm(L, sd = heritable_amplitude),
-    #   conditional_expectation_weight = phylogenetic_GP[i, "weight", ],
-    #   conditional_standard_deviation = phylogenetic_GP[i, "sd", ],
-    #   latent_trait_precision = lambda_F[i, ],
-    #   perform_checks = perform_checks
-    # )
     f[i, ] <- colMeans(Z[manifest_trait_df[, id_label] == phy$tip.label[i], ])
     outer_F[, , i] <- gaussian_outer_product_expectation(
       expected_value = f[i, ], precision_matrix = diag(lambda_F[i, ]),
@@ -241,16 +219,6 @@ initialise_plvm <- function(
       conditional_standard_deviation = phylogenetic_GP[i, "sd", ],
       perform_checks = perform_checks
     )
-    # f[i, ] <- compute_internal_taxon_specific_latent_trait_expectation(
-    #   child_taxa_latent_traits = f[ch, ],
-    #   child_taxa_conditional_expectation_weights = phylogenetic_GP[ch, "weight", ],
-    #   child_taxa_conditional_standard_deviations = phylogenetic_GP[ch, "sd", ],
-    #   parent_taxon_latent_trait = stats::rnorm(L, sd = heritable_amplitude),
-    #   conditional_expectation_weight = phylogenetic_GP[i, "weight", ],
-    #   conditional_standard_deviation = phylogenetic_GP[i, "sd", ],
-    #   latent_trait_precision = lambda_F[i, ],
-    #   perform_checks = perform_checks
-    # )
     f[i, ] <- colMeans(f[ch, ])
     outer_F[, , i] <- gaussian_outer_product_expectation(
       expected_value = f[i, ], covariance_matrix = diag(1 / lambda_F[i, ]),

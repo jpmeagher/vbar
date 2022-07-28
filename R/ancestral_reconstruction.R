@@ -14,6 +14,8 @@
 #' @param precision_vector A D dimensional vector of positive real values. The
 #'   independent precision associated with each auxiliary trait.
 #' @inheritParams initialise_plvm
+#' @param probs A numeric vector of values on the unit interval. The desired
+#'   quantiles for continuous manifest traits.
 #' @param n_samples A positive integer. The number of samples drawn to construct
 #'   a Monte-Carlo approximation to the approximate posterior distribution of
 #'   nominal traits.
@@ -30,6 +32,7 @@ variational_ancestral_reconstruction <- function(
   precision_vector,
   metadata,
   n_samples = 1000,
+  probs = c(0.025, 0.975),
   perform_checks = TRUE
   ){
   P <- nrow(metadata)
@@ -53,7 +56,7 @@ variational_ancestral_reconstruction <- function(
     checkmate::assert_integerish(n_samples, lower = 1)
   }
   x_ex <-
-    c(loading_expectation %*% diag(taxon_specific_latent_trait_expectation))
+    c(loading_expectation %*% taxon_specific_latent_trait_expectation)
   x_var <- diag(1 / precision_vector) +
     (
       loading_expectation %*% diag(taxon_specific_latent_trait_covariance) %*% t(loading_expectation)
@@ -62,10 +65,29 @@ variational_ancestral_reconstruction <- function(
   ar <- lapply(
     1:P,
     function(i){
-      if (metadata$trait_type[i] %in% c("con", "fvt")) {
+      if (metadata$trait_type[i] == "con") {
         tmp <- list()
-        tmp$expectation <- x_ex[metadata$auxiliary_trait_index[[i]]]
-        tmp$marginal_sd <- sqrt(diag(x_var))[metadata$auxiliary_trait_index[[i]]]
+        tmp_mu <- x_ex[metadata$auxiliary_trait_index[[i]]]
+        tmp_sigma <- sqrt(diag(x_var))[metadata$auxiliary_trait_index[[i]]]
+        tmp_X <-  stats::rnorm(
+          n_samples, mean = tmp_mu, sd = tmp_sigma
+        )
+        tmp_Y <- sapply(tmp_X, metadata$link_functions[[i]])
+        tmp$expectation <- mean(tmp_Y)
+        tmp$marginal_sd <- stats::sd(tmp_Y)
+        tmp$quantiles <- stats::quantile(tmp_Y, probs = probs)
+      }
+      if (metadata$trait_type[i] == "fvt") {
+        tmp <- list()
+        tmp_X <- mvnfast::rmvn(
+          n_samples,
+          mu = x_ex[metadata$auxiliary_trait_index[[i]]],
+          sigma = as.matrix(x_var[metadata$auxiliary_trait_index[[i]], metadata$auxiliary_trait_index[[i]]])
+          )
+        tmp_Y <- apply(tmp_X, 1, metadata$link_functions[[i]])
+        tmp$expectation <- rowMeans(tmp_Y)
+        tmp$marginal_sd <- apply(tmp_Y, 1, stats::sd)
+        tmp$quantiles <- apply(tmp_Y, 1, stats::quantile, probs = probs)
       }
       if (metadata$trait_type[i] == "ord") {
         K <- length(metadata$cut_off_points[[i]]) - 1
