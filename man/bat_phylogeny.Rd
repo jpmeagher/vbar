@@ -8,14 +8,16 @@
 An object of class \code{phylo} of length 4.
 }
 \source{
-{https://link.springer.com/article/10.1007/s10914-016-9363-8}
+{Bat Systematics in the Light of Unconstrained Analyses of a
+Comprehensive Molecular Supermatrix -
+https://link.springer.com/article/10.1007/s10914-016-9363-8}
 }
 \usage{
 bat_phylogeny
 }
 \description{
 A phylogenetic tree for 22 species of Mexican bat transcribed from the
-Maximum a posteriori phylogeny inferred by Amador et al. (2018) (see link
+maximum a posteriori phylogeny inferred by Amador et al. (2018) (see link
 below).
 }
 \keyword{datasets}

@@ -48,10 +48,10 @@ cavi_plvm <- function(
         i = l,
         individual_specific_latent_trait_expectation = mod$individual_specific_latent_trait_expectation,
         taxon_id = mod$manifest_trait_df[, mod$id_label], phy = mod$phy,
-        terminal_taxon_specific_latent_trait_expectation = mod$taxon_specific_latent_trait_expectation[1:S,],
+        terminal_taxon_specific_latent_trait_expectation = mod$taxon_specific_latent_trait_expectation[1:S, , drop=F],
         individual_specific_latent_trait_covariance = mod$individual_specific_latent_trait_covariance,
         individual_specific_latent_trait_outer_product_expectation = mod$individual_specific_latent_trait_outer_product_expectation,
-        terminal_taxon_latent_trait_outer_product_expectation = mod$taxon_specific_latent_trait_outer_product_expectation[, , 1:S],
+        terminal_taxon_latent_trait_outer_product_expectation = mod$taxon_specific_latent_trait_outer_product_expectation[, , 1:S, drop=F],
         within_taxon_amplitude = mod$within_taxon_amplitude,
         perform_checks = FALSE,
         method = "Brent", lower = 0, upper = 1
@@ -139,12 +139,14 @@ cavi_plvm <- function(
       scaled_conditional_row_variance_vector = mod$scaled_conditional_loading_row_variance_vector,
       perform_checks = FALSE
     ))
+    mod$loading_row_precision <- array(mod$loading_row_precision, dim = c(L, L, D_prime))
     mod$loading_row_covariance <- simplify2array(lapply(
       1:D_prime,
       function(d){
-        chol2inv(chol(mod$loading_row_precision[, , d]))
+        chol2inv(chol(as.matrix(mod$loading_row_precision[, , d])))
       }
     ))
+    mod$loading_row_covariance <- array(mod$loading_row_covariance, dim = c(L, L, D_prime))
     mod$loading_expectation <-  compute_loading_expectation(
       current_loading_expectation = mod$loading_expectation,
       loading_row_precision = mod$loading_row_precision,
@@ -166,6 +168,7 @@ cavi_plvm <- function(
         )
       }
     ))
+    mod$loading_row_outer_product_expectation <- array(mod$loading_row_outer_product_expectation, dim = c(L, L, D_prime))
     mod$loading_col_outer_product_expectation <- simplify2array(lapply(
       1:L,
       function(l){
@@ -176,6 +179,7 @@ cavi_plvm <- function(
         )
       }
     ))
+    mod$loading_col_outer_product_expectation <- array(mod$loading_col_outer_product_expectation, dim = c(D_prime, D_prime, L))
     # Individual-Specific Latent Traits
     mod$individual_specific_latent_trait_precision <- compute_individual_specific_latent_trait_precision(
       precision_vector = mod$precision_vector,
@@ -198,16 +202,21 @@ cavi_plvm <- function(
         )
       }
     ))
+    if (L == 1) mod$individual_specific_latent_trait_expectation <- t(mod$individual_specific_latent_trait_expectation)
     mod$individual_specific_latent_trait_outer_product_expectation <- simplify2array(lapply(
       1:N,
       function(i){
         gaussian_outer_product_expectation(
-          expected_value = mod$individual_specific_latent_trait_expectation[i, ],
+          expected_value = t(mod$individual_specific_latent_trait_expectation[i, ,drop=F]),
           covariance_matrix = mod$individual_specific_latent_trait_covariance,
           perform_checks = FALSE
         )
       }
     ))
+    mod$individual_specific_latent_trait_outer_product_expectation <- array(
+      mod$individual_specific_latent_trait_outer_product_expectation,
+      dim = c(L, L, N)
+      )
     # Taxon-specific latent traits
     for (s in 1:S) {
       desc_ind <- mod$manifest_trait_df[, mod$id_label] == mod$phy$tip.label[s]
@@ -219,7 +228,7 @@ cavi_plvm <- function(
         perform_checks = FALSE
       )
       mod$taxon_specific_latent_trait_expectation[s, ] <- compute_terminal_taxon_specific_latent_trait_expectation(
-        individual_specific_latent_traits = mod$individual_specific_latent_trait_expectation[desc_ind, ],
+        individual_specific_latent_traits = mod$individual_specific_latent_trait_expectation[desc_ind, , drop=F],
         within_taxon_amplitude = mod$within_taxon_amplitude,
         parent_taxon_latent_trait = mod$taxon_specific_latent_trait_expectation[anc_ind, ],
         conditional_expectation_weight = mod$phylogenetic_GP[s, "weight", ],
@@ -229,7 +238,7 @@ cavi_plvm <- function(
       )
       mod$taxon_specific_latent_trait_outer_product_expectation[, , s] <- gaussian_outer_product_expectation(
         expected_value = mod$taxon_specific_latent_trait_expectation[s, ],
-        covariance_matrix = diag(1 / mod$taxon_specific_latent_trait_precision[s, ]),
+        covariance_matrix = diag(L) * (1 / mod$taxon_specific_latent_trait_precision[s, ]),
         perform_checks = FALSE
       )
     }
@@ -242,15 +251,15 @@ cavi_plvm <- function(
         anc_lt <- mod$taxon_specific_latent_trait_expectation[anc_ind, ]
       }
       mod$taxon_specific_latent_trait_precision[s, ] <- compute_internal_taxon_specific_latent_trait_precision(
-        child_taxa_conditional_expectation_weights = mod$phylogenetic_GP[ch, "weight", ],
-        child_taxa_conditional_standard_deviations = mod$phylogenetic_GP[ch, "sd", ],
+        child_taxa_conditional_expectation_weights = as.matrix(mod$phylogenetic_GP[ch, "weight", ]),
+        child_taxa_conditional_standard_deviations = as.matrix(mod$phylogenetic_GP[ch, "sd", ]),
         conditional_standard_deviation = mod$phylogenetic_GP[s, "sd", ],
         perform_checks = FALSE
       )
       mod$taxon_specific_latent_trait_expectation[s, ] <- compute_internal_taxon_specific_latent_trait_expectation(
         child_taxa_latent_traits = mod$taxon_specific_latent_trait_expectation[ch, ],
-        child_taxa_conditional_expectation_weights = mod$phylogenetic_GP[ch, "weight", ],
-        child_taxa_conditional_standard_deviations = mod$phylogenetic_GP[ch, "sd", ],
+        child_taxa_conditional_expectation_weights = as.matrix(mod$phylogenetic_GP[ch, "weight", ]),
+        child_taxa_conditional_standard_deviations = as.matrix(mod$phylogenetic_GP[ch, "sd", ]),
         parent_taxon_latent_trait = anc_lt,
         conditional_expectation_weight = mod$phylogenetic_GP[s, "weight", ],
         conditional_standard_deviation = mod$phylogenetic_GP[s, "sd", ],
@@ -259,7 +268,7 @@ cavi_plvm <- function(
       )
       mod$taxon_specific_latent_trait_outer_product_expectation[, , s] <- gaussian_outer_product_expectation(
         expected_value = mod$taxon_specific_latent_trait_expectation[s, ],
-        covariance_matrix = diag(1 / mod$taxon_specific_latent_trait_precision[s, ]),
+        covariance_matrix = diag(L) *(1 / mod$taxon_specific_latent_trait_precision[s, ]),
         perform_checks = FALSE
       )
     }

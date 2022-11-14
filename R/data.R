@@ -49,8 +49,39 @@
 #' Bat Phylogeny
 #'
 #' A phylogenetic tree for 22 species of Mexican bat transcribed from the
-#' Maximum a posteriori phylogeny inferred by Amador et al. (2018) (see link
+#' maximum a posteriori phylogeny inferred by Amador et al. (2018) (see link
 #' below).
 #'
-#' @source{https://link.springer.com/article/10.1007/s10914-016-9363-8}
+#' @source{Bat Systematics in the Light of Unconstrained Analyses of a
+#' Comprehensive Molecular Supermatrix -
+#' https://link.springer.com/article/10.1007/s10914-016-9363-8}
 "bat_phylogeny"
+
+#' Bat scholocation call recordings
+#'
+#' A set of 1805 echolocation call recordings collected from 449 individual bats
+#' across 22 species and 5 families. Calls were recorded at a sampling rate of
+#' 500 kHz. The original data set is described by Stathopolous et al. (2017)
+#' (see link below). Additional features have been extracted from echolocation
+#' calls allow comparative analysis. These feature are based on a harmonic model
+#' for bat echolocation calls and the feature extraction procedure is described
+#' in Meagher (2020) (see second link below)
+#'
+#' @source{Bat echolocation call identification for biodiversity monitoring: a probabilistic approach - https://doi.org/10.1111/rssc.12217}
+#' @source{Bayesian Ancestral Reconstruction for Bat Echolocation - https://ethos.bl.uk/OrderDetails.do?uin=uk.bl.ethos.828108}
+#'
+#' @format A data frame with 1816 observations of 4 variables:
+#' \describe{
+#' \item{bat}{The individual bat identifier.}
+#' \item{species}{The bat species identifier.}
+#' \item{family}{The species family identifier.}
+#' \item{call_recording}{A list of calls recorded at a sampling rate of 500 kHz.}
+#' \item{fundamental_frequency_contour}{A list of estimates for the fundamental
+#' frequency taken from the bat echolocation call recording and the associated time
+#' for the estimate within the call recording.}
+#' \item{duration}{The time duration of the echolocation call. Reported in
+#' milliseconds.}
+#' \item{harmonic_order}{The number of harmonics in the echolocation call.}
+#' \item{dominant_harmonic}{The harmonic carrying the most energy.}
+#' }
+"bat_echolocation_calls"

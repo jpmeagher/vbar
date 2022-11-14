@@ -875,9 +875,10 @@ parameters of the generative model.
 First, we verify that the CAVI algorithm is maximising the ELBO. The
 figure omits the ELBO at the first 5 iterations of the CAVI for clarity.
 
-<img src="man/figures/README-plot_elbo-1.png" width="100%" /> We then
-account of any reordering or reflection of the inferred loadings
-relative to the model specification.
+<img src="man/figures/README-plot_elbo-1.png" width="100%" />
+
+We then account of any reordering or reflection of the inferred loadings
+relative to the true model specification.
 
 ``` r
 R_mat <- IMIFA::Procrustes(

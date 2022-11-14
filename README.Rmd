@@ -684,7 +684,8 @@ data.frame(iter = seq_along(cavi$elbo)-1,  elbo = cavi$elbo) %>%
     y = "ELBO"
   )
 ```
-We then account of any reordering or reflection of the inferred loadings relative to the model specification.
+
+We then account of any reordering or reflection of the inferred loadings relative to the true model specification.
 
 ```{r check_rotation}
 R_mat <- IMIFA::Procrustes(

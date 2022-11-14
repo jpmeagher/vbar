@@ -83,7 +83,7 @@ compute_individual_specific_latent_trait_precision <- function(
   apply(
     sweep(loading_outer_product_expectation, 3, precision_vector, "*"),
     c(1, 2), sum
-    ) + diag(1 / within_taxon_amplitude^2)
+    ) + (diag(L) *(1 / within_taxon_amplitude^2))
 }
 
 #' Compute Individual-specific Latent Trait Expectation
@@ -138,7 +138,7 @@ compute_individual_specific_latent_trait_expectation <- function(
     )
   }
   tmp <- t(loading) %*% diag(precision_vector) %*% auxiliary_trait +
-    diag(1 / within_taxon_amplitude^2) %*% taxon_specific_latent_trait
+    (diag(L)*(1 / within_taxon_amplitude^2)) %*% taxon_specific_latent_trait
   c(solve(
     individual_specific_latent_trait_precision,
     tmp
@@ -429,15 +429,15 @@ compute_individual_specific_latent_trait_elbo <- function(
     ), c(1, 2), sum
   )
   A2 <- -0.5 * sum(diag(
-    (A2.1 + A2.2) %*% diag(within_taxon_amplitude^-2)
+    (A2.1 + A2.2) %*% (diag(L) * (within_taxon_amplitude^-2))
   ))
   A3 <- sum(sapply(
     1:S,
     function(i){
       t(terminal_taxon_specific_latent_trait_expectation[i, ]) %*%
-        diag(within_taxon_amplitude^-2) %*%
+        (diag(L) * (within_taxon_amplitude^-2)) %*%
         colSums(
-          individual_specific_latent_trait_expectation[taxon_id == phy$tip.label[i], ]
+          individual_specific_latent_trait_expectation[taxon_id == phy$tip.label[i], ,drop=F]
         )
     }
   ))
@@ -507,16 +507,16 @@ compute_taxon_specific_latent_trait_elbo <- function(
     function(i) {
       sum(diag(
         (taxon_specific_latent_trait_outer_product_expectation[, , traversal_order[i, 2]] +
-          (diag(phylogenetic_gp[traversal_order[i, 2], "weight", ]^2) %*%
+          ((diag(L) * (phylogenetic_gp[traversal_order[i, 2], "weight", ]^2)) %*%
              taxon_specific_latent_trait_outer_product_expectation[, , traversal_order[i, 1]])
         ) %*%
-          diag(phylogenetic_gp[traversal_order[i, 2], "sd", ]^-2)
+          (diag(L) * (phylogenetic_gp[traversal_order[i, 2], "sd", ]^-2))
       ))
     }
   ))
   A2.2 <- sum(diag(
     taxon_specific_latent_trait_outer_product_expectation[, , S + 1] %*%
-      diag(phylogenetic_gp[S + 1, "sd", ]^-2)
+      (diag(L) * (phylogenetic_gp[S + 1, "sd", ]^-2))
   ))
   A2 <- - 0.5 * (A2.1 + A2.2)
   A3 <- sum(sapply(

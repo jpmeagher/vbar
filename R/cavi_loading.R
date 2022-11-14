@@ -56,15 +56,19 @@ initialise_loading <- function(
     }
     pca <- stats::prcomp(auxiliary_traits)
     W_star <- pca$rotation[, 1:L]
-    W_tmp <- sweep(W_star, 2, pca$sdev[1:L], "*")
+    W_tmp <- sweep(as.matrix(W_star), 2, pca$sdev[1:L], "*")
     if (method == "pca") {
       W <- W_tmp
     }
     if (method == "varimax") {
-      vari <- stats::varimax(W_tmp)
-      W <- vari$loadings
-      attributes(W) <- NULL
-      W <- matrix(W, ncol = L)
+      if (L > 1) {
+        vari <- stats::varimax(W_tmp)
+        W <- vari$loadings
+        attributes(W) <- NULL
+        W <- matrix(W, ncol = L)
+      } else {
+        W <- W_tmp
+      }
     }
   }
   W
@@ -204,7 +208,7 @@ compute_loading_row_precision <- function(
       c_star, lower = 0, finite = TRUE
     )
   }
-  (precision * ZTZ) + (diag(ard_precision) / c_star)
+  (precision * ZTZ) + ((diag(L) * ard_precision) / c_star)
 }
 
 

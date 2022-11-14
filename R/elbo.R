@@ -42,10 +42,10 @@ compute_plvm_elbo <- function(
     compute_individual_specific_latent_trait_elbo(
       individual_specific_latent_trait_expectation = plvm_list$individual_specific_latent_trait_expectation,
       taxon_id = plvm_list$manifest_trait_df[, plvm_list$id_label], phy = plvm_list$phy,
-      terminal_taxon_specific_latent_trait_expectation = plvm_list$taxon_specific_latent_trait_expectation[1:S,],
+      terminal_taxon_specific_latent_trait_expectation = plvm_list$taxon_specific_latent_trait_expectation[1:S, , drop = F],
       individual_specific_latent_trait_covariance = plvm_list$individual_specific_latent_trait_covariance,
       individual_specific_latent_trait_outer_product_expectation = plvm_list$individual_specific_latent_trait_outer_product_expectation,
-      terminal_taxon_latent_trait_outer_product_expectation = plvm_list$taxon_specific_latent_trait_outer_product_expectation[, , 1:S],
+      terminal_taxon_latent_trait_outer_product_expectation = plvm_list$taxon_specific_latent_trait_outer_product_expectation[, , 1:S, drop = F],
       within_taxon_amplitude = plvm_list$within_taxon_amplitude,
       perform_checks = perform_checks
     )

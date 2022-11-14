@@ -576,7 +576,7 @@ compute_continuous_auxiliary_trait_elbo <- function(
       )
     )
   }
-  if (D == 1) loading_expectation = t(loading_expectation)
+  if (is.null(dim(loading_expectation))) loading_expectation <- t(loading_expectation)
   A1 <- - N * D * log(2 * pi) / 2
   A2 <- N * D * log(precision) / 2
   A3.1 <- sum(diag(t(X) %*% X))
@@ -625,10 +625,10 @@ compute_auxiliary_trait_elbo <- function(
     if (metadata$trait_type[i] %in% c("con", "fvt")) {
       elbo[i] <- compute_continuous_auxiliary_trait_elbo(
         auxiliary_trait = auxiliary_traits[, metadata$auxiliary_trait_index[[i]]],
-        loading_expectation = loading_expectation[metadata$auxiliary_trait_index[[i]], ],
+        loading_expectation = loading_expectation[metadata$auxiliary_trait_index[[i]], , drop=F],
         latent_trait_expectation = latent_trait_expectation,
         precision = precision[i],
-        loading_outer_expectation = loading_outer_expectation[, , metadata$auxiliary_trait_index[[i]]],
+        loading_outer_expectation = loading_outer_expectation[, , metadata$auxiliary_trait_index[[i]], drop = F],
         latent_trait_outer_expectation = latent_trait_outer_expectation,
         perform_checks = perform_checks
       )
@@ -637,9 +637,9 @@ compute_auxiliary_trait_elbo <- function(
         elbo[i] <- compute_nominal_auxiliary_trait_elbo(
           y = manifest_trait_df[, metadata$manifest_trait_index[[i]]],
           n_samples = n_samples, random_seed = random_seed,
-          loading_expectation = loading_expectation[metadata$auxiliary_trait_index[[i]], ],
+          loading_expectation = loading_expectation[metadata$auxiliary_trait_index[[i]], , drop = F],
           latent_trait_expectation = latent_trait_expectation,
-          loading_outer_expectation = loading_outer_expectation[, , metadata$auxiliary_trait_index[[i]]],
+          loading_outer_expectation = loading_outer_expectation[, , metadata$auxiliary_trait_index[[i]], drop = F],
           latent_trait_outer_expectation = latent_trait_outer_expectation,
           perform_checks = perform_checks
         )
@@ -650,7 +650,7 @@ compute_auxiliary_trait_elbo <- function(
           cut_off_points = metadata$cut_off_points[[i]],
           loading_expectation = loading_expectation[metadata$auxiliary_trait_index[[i]], ],
           latent_trait_expectation = latent_trait_expectation,
-          loading_outer_expectation = loading_outer_expectation[, , metadata$auxiliary_trait_index[[i]]],
+          loading_outer_expectation = as.matrix(loading_outer_expectation[, , metadata$auxiliary_trait_index[[i]]]),
           latent_trait_outer_expectation = latent_trait_outer_expectation,
           perform_checks = perform_checks
         )

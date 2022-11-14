@@ -141,7 +141,6 @@ initialise_plvm <- function(
   U_C_w <- chol(loading_prior_correlation)
   inv_C_w <- chol2inv(U_C_w)
   log_det_C_w <- 2 * sum(log(diag(U_C_w)))
-
   lambda_W_list <- compute_loading_row_precision_list(
     total_individual_specific_latent_trait_outer_product_expectation = t(Z) %*% Z,
     precision_vector = lambda_vector,
@@ -150,22 +149,25 @@ initialise_plvm <- function(
     perform_checks = perform_checks
   )
   lambda_W <- simplify2array(lambda_W_list)
+  lambda_W <- array(lambda_W, dim = c(L, L, D_prime))
   inv_lambda_W <- simplify2array(lapply(
     1:D_prime,
     function(i){
       chol2inv(chol(lambda_W[, , i]))
     }
   ))
+  inv_lambda_W <- array(inv_lambda_W, dim = c(L, L, D_prime))
   outer_W_list <- lapply(
     1:D_prime,
     function(i){
       gaussian_outer_product_expectation(
-        expected_value = W[i, ], covariance_matrix = inv_lambda_W[, , i],
+        expected_value = W[i, ], covariance_matrix = matrix(inv_lambda_W[, , i], nrow = L, ncol = L),
         perform_checks = perform_checks
       )
     }
   )
   outer_W <- simplify2array(outer_W_list)
+  outer_W <- array(outer_W, dim = c(L, L, D_prime))
   outer_W_col_list <- lapply(
     1:L,
     function(i){
@@ -177,9 +179,11 @@ initialise_plvm <- function(
   )
   outer_W_col <- simplify2array(outer_W_col_list)
   # Individual Specific Latent Trait Parameters
+  tmp_W_outer <- simplify2array(outer_W_list)
+  tmp_W_outer <- array(tmp_W_outer, dim = c(L, L, D_prime))
   lambda_Z <- compute_individual_specific_latent_trait_precision(
     precision_vector = lambda_vector,
-    loading_outer_product_expectation = simplify2array(outer_W_list),
+    loading_outer_product_expectation = tmp_W_outer,
     within_taxon_amplitude = within_taxon_amplitude,
     perform_checks = perform_checks
   )
@@ -194,6 +198,7 @@ initialise_plvm <- function(
     }
   )
   outer_Z <- simplify2array(outer_Z_list)
+  outer_Z <- array(outer_Z, dim = c(L, L, N))
   # Taxon Specific Latent Traits
   f <- lambda_F <- matrix(NA, S + phy$Nnode, L)
   outer_F <- array(NA, dim = c(L, L, S + phy$Nnode))
@@ -205,23 +210,23 @@ initialise_plvm <- function(
       conditional_standard_deviation = phylogenetic_GP[i, "sd", ],
       perform_checks = perform_checks
     )
-    f[i, ] <- colMeans(Z[manifest_trait_df[, id_label] == phy$tip.label[i], ])
+    f[i, ] <- colMeans(as.matrix(Z[manifest_trait_df[, id_label] == phy$tip.label[i], ]))
     outer_F[, , i] <- gaussian_outer_product_expectation(
-      expected_value = f[i, ], precision_matrix = diag(lambda_F[i, ]),
+      expected_value = f[i, ], precision_matrix = diag(L)  * lambda_F[i, ],
       perform_checks = perform_checks
     )
   }
   for (i in unique(phy$edge[ape::postorder(phy), 1])) {
     ch <- phy$edge[phy$edge[, 1] == i, 2]
     lambda_F[i, ] <- compute_internal_taxon_specific_latent_trait_precision(
-      child_taxa_conditional_expectation_weights = phylogenetic_GP[ch, "weight", ],
-      child_taxa_conditional_standard_deviations = phylogenetic_GP[ch, "sd", ],
+      child_taxa_conditional_expectation_weights = as.matrix(phylogenetic_GP[ch, "weight", ]),
+      child_taxa_conditional_standard_deviations = as.matrix(phylogenetic_GP[ch, "sd", ]),
       conditional_standard_deviation = phylogenetic_GP[i, "sd", ],
       perform_checks = perform_checks
     )
-    f[i, ] <- colMeans(f[ch, ])
+    f[i, ] <- colMeans(as.matrix(f[ch, ]))
     outer_F[, , i] <- gaussian_outer_product_expectation(
-      expected_value = f[i, ], covariance_matrix = diag(1 / lambda_F[i, ]),
+      expected_value = f[i, ], covariance_matrix = diag(L) * (1 / lambda_F[i, ]),
       perform_checks = perform_checks
     )
   }

@@ -16,6 +16,7 @@ update_precision <- function(
 ){
   P <- nrow(metadata)
   N <- nrow(auxiliary_traits)
+  L <- ncol(loading_expectation)
   X <- auxiliary_traits
   M <- latent_trait_expectation %*% t(loading_expectation)
   lambda <- precision
@@ -27,8 +28,8 @@ update_precision <- function(
       beta <- (
         sum(diag(t(X[, ind]) %*% X[, ind])) -
           (2 * sum(diag(t(X[, ind]) %*% M[, ind]))) +
-          sum(diag(
-            apply(loading_outer_expectation[, , ind], c(1, 2), sum) %*%
+          sum(diag(L) * (
+            apply(loading_outer_expectation[, , ind, drop=F], c(1, 2), sum) %*%
               apply(latent_trait_outer_expectation, c(1, 2), sum)
           ))
       ) / 2
